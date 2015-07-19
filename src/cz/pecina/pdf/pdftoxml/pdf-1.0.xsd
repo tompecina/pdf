@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- XML Schema for PDF V1.0 -->
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.pecina.cz" xmlns="http://www.pecina.cz" elementFormDefault="qualified">
+  <xs:element name="pdf">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="version"/>
+	<xs:element ref="trailer"/>
+	<xs:element ref="content"/>
+      </xs:sequence>
+      <xs:attribute name="version" use="required" type="xs:NMTOKEN" fixed="1.0"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="version" type="xs:NMTOKEN"/>
+  <xs:element name="trailer">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="dictionary"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="dictionary">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="entry" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="entry">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="key"/>
+	<xs:element ref="value"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="key" type="xs:string"/>
+  <xs:element name="value">
+    <xs:complexType>
+      <xs:choice>
+	<xs:group ref="object"/>
+	<xs:element ref="indirect-reference"/>
+      </xs:choice>
+    </xs:complexType>
+  </xs:element>
+  <xs:group name="object">
+    <xs:choice>
+      <xs:element ref="array"/>
+      <xs:element ref="boolean"/>
+      <xs:element ref="dictionary"/>
+      <xs:element ref="name"/>
+      <xs:element ref="null"/>
+      <xs:element ref="number"/>
+      <xs:element ref="string"/>
+    </xs:choice>
+  </xs:group>
+  <xs:element name="array">
+    <xs:complexType>
+      <xs:sequence minOccurs="0" maxOccurs="unbounded">
+	<xs:choice>
+	  <xs:group ref="object"/>
+	  <xs:element ref="indirect-reference"/>
+	</xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="boolean" type="xs:boolean"/>
+  <xs:element name="name" type="xs:string"/>
+  <xs:element name="null">
+    <xs:complexType/>
+  </xs:element>
+  <xs:element name="number" type="xs:float"/>
+  <xs:element name="string">
+    <xs:complexType>
+      <xs:simpleContent>
+	<xs:extension base="xs:string">
+	  <xs:attribute name="format" type="format"/>
+	</xs:extension>
+      </xs:simpleContent>
+    </xs:complexType>
+  </xs:element>
+  <xs:simpleType name="format">
+    <xs:restriction base="xs:NCName">
+      <xs:enumeration value="text"/>
+      <xs:enumeration value="hex"/>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="indirect-reference">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element name="number" type="xs:positiveInteger"/>
+	<xs:element name="generation" type="xs:nonNegativeInteger"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="content">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="object" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="object">
+    <xs:complexType>
+      <xs:choice>
+	<xs:group ref="object"/>
+	<xs:element ref="stream"/>
+      </xs:choice>
+      <xs:attribute name="number" use="required" type="xs:positiveInteger"/>
+      <xs:attribute name="generation" use="required" type="xs:nonNegativeInteger"/>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="stream">
+    <xs:complexType>
+      <xs:sequence>
+	<xs:element ref="dictionary"/>
+	<xs:choice>
+	  <xs:element name="data" type="stream-data"/>
+	  <xs:element name="raw" type="stream-data"/>
+	</xs:choice>
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:complexType name="stream-data">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+	<xs:attribute name="format" use="required" type="format"/>
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+</xs:schema>
