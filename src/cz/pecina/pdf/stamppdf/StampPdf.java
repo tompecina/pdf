@@ -20,20 +20,14 @@
 
 package cz.pecina.pdf.stamppdf;
 
-import java.util.Calendar;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
-import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfStamper;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Image;
 import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfTemplate;
 import com.itextpdf.text.pdf.PdfContentByte;
 import java.util.logging.Logger;
 import cz.pecina.pdf.stamppdf.Parameters;
