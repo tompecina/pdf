@@ -184,7 +184,7 @@ public class Parameters {
 	xOffset = Float.parseFloat(remArgs[0]);
 	yOffset = Float.parseFloat(remArgs[1]);
 	text = remArgs[2];
-	fileNames = Arrays.copyOfRange(line.getArgs(), 3, 5);
+	fileNames = Arrays.copyOfRange(remArgs, 3, remArgs.length);
 
 	log.fine("Parameters set up");
     }

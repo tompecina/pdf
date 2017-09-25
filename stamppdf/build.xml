@@ -92,6 +92,7 @@
   <!-- jar -->
   <target name="jar" depends="clean,compile" description="Generate application JAR">
     <jar jarfile="${build.lib.dir}/${package}.jar" basedir="${build.classes.dir}">
+      <fileset dir="." includes="${resources.dir}/${prefix}/${package}/fonts/*.ttf"/>
       <zipfileset src="${lib.dir}/itextpdf.jar" includes="com/"/>
       <zipfileset src="${lib.dir}/commons-cli.jar" includes="org/"/>
       <manifest>

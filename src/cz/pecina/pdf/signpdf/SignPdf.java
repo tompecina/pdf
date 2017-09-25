@@ -78,18 +78,14 @@ public class SignPdf {
 	Parameters parameters = new Parameters(args);
 
 	String inFileName = parameters.getFileName(0);
+	byte[] inputData = null;
 	String outFileName = null;
 	PrivateKey key = null;
 	Certificate[] certificateChain = null;
-	final String tempFileName = "/tmp/signpdf.pdf";
+
 	try {
-	    if (parameters.numberFileNames() == 1) {
-		Files.copy(Paths.get(inFileName), Paths.get(tempFileName), StandardCopyOption.REPLACE_EXISTING);
-		outFileName = inFileName;
-		inFileName = tempFileName;
-	    } else {
-		outFileName = parameters.getFileName(1);
-	    }
+	    inputData = Files.readAllBytes(Paths.get(parameters.getFileName(0)));
+	    outFileName = parameters.getFileName(parameters.numberFileNames() - 1);
 	} catch (Exception exception) {
 	    System.err.println("Error opening files, exception: " + exception);
 	    log.fine("Error opening files, exception: " + exception);
@@ -121,7 +117,7 @@ public class SignPdf {
 	}
 
 	try {
-	    PdfReader reader = new PdfReader(inFileName);
+	    PdfReader reader = new PdfReader(inputData);
 	    if ((parameters.getSignatureFieldName() != null) && !reader.getAcroFields().getBlankSignatureNames().contains(parameters.getSignatureFieldName())) {
 		System.err.println("Field not found");
 		log.fine("Field not found");
@@ -168,13 +164,13 @@ public class SignPdf {
 		    log.fine("Signature field is too small");
 		    System.exit(1);
 		}
-		final String resourcePath = "/home/tompecina/devel/pdf/res/cz/pecina/pdf/signpdf";
+		final String resourcePath = "res/cz/pecina/pdf/signpdf";
 		String imageFileName = null;
 		if (parameters.getCertificationLevel() > 0) {
 		    imageFileName = resourcePath + "/graphics/sealcer.png";
 		} else {
 		    imageFileName = resourcePath + "/graphics/sealappr.png";
-		}		   
+		}
 		final Image image = Image.getInstance(imageFileName);
 		image.scaleToFit(10000f, 36f);
 		image.setAbsolutePosition(0f, (height - 36f));

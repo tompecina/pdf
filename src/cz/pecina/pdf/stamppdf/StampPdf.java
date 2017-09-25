@@ -23,6 +23,7 @@ package cz.pecina.pdf.stamppdf;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import com.itextpdf.text.pdf.PdfReader;
@@ -62,17 +63,12 @@ public class StampPdf {
 	float xOffset = parameters.getXOffset();
 	float yOffset = parameters.getYOffset();
 	String text = parameters.getText();
-	String inFileName = parameters.getFileName(0);
+	byte[] inputData = null;
 	String outFileName = null;
-	final String tempFileName = "/tmp/stamppdf.pdf";
+
 	try {
-	    if (parameters.numberFileNames() == 1) {
-		Files.copy(Paths.get(inFileName), Paths.get(tempFileName), StandardCopyOption.REPLACE_EXISTING);
-		outFileName = inFileName;
-		inFileName = tempFileName;
-	    } else {
-		outFileName = parameters.getFileName(1);
-	    }
+	    inputData = Files.readAllBytes(Paths.get(parameters.getFileName(0)));
+	    outFileName = parameters.getFileName(parameters.numberFileNames() - 1);
 	} catch (Exception exception) {
 	    System.err.println("Error opening files, exception: " + exception);
 	    log.fine("Error opening files, exception: " + exception);
@@ -80,12 +76,12 @@ public class StampPdf {
 	}
 
 	try {
-	    final PdfReader reader = new PdfReader(inFileName);
+	    final PdfReader reader = new PdfReader(inputData);
 	    final OutputStream fileOutputStream = new FileOutputStream(outFileName);
 	    final PdfStamper stamper = new PdfStamper(reader, fileOutputStream, '\0', true);
 	    final PdfContentByte over = stamper.getOverContent(1);
 	    over.beginText();
-	    final String resourcePath = "/home/tompecina/devel/pdf/res/cz/pecina/pdf/stamppdf";
+	    final String resourcePath = "res/cz/pecina/pdf/stamppdf";
 	    final BaseFont baseFont = BaseFont.createFont(resourcePath + "/fonts/LiberationSans-Regular.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 	    over.setFontAndSize(baseFont, 9);
 	    over.setCharacterSpacing(0.1f);
