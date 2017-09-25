@@ -66,9 +66,6 @@
 
   <!-- fonts -->
   <dependset>
-    <srcfileset dir="${bin.dir}/${package}" includes="LiberationSans-BoldItalic.ttf"/>
-    <srcfileset dir="${bin.dir}/${package}" includes="LiberationSans-Bold.ttf"/>
-    <srcfileset dir="${bin.dir}/${package}" includes="LiberationSans-Italic.ttf"/>
     <srcfileset dir="${bin.dir}/${package}" includes="LiberationSans-Regular.ttf"/>
     <targetfilelist dir="${resources.dir}/${prefix}/${package}/fonts" files="LiberationSans-Regular.ttf"/>
   </dependset>
@@ -77,9 +74,6 @@
     <echo message="Copying fonts"/>
     <copy todir="${resources.dir}/${prefix}/${package}/fonts">
       <fileset dir="${bin.dir}/${package}" includes="LiberationSans-Regular.ttf"/>
-      <fileset dir="${bin.dir}/${package}" includes="LiberationSans-Italic.ttf"/>
-      <fileset dir="${bin.dir}/${package}" includes="LiberationSans-Bold.ttf"/>
-      <fileset dir="${bin.dir}/${package}" includes="LiberationSans-BoldItalic.ttf"/>
     </copy>
   </target>
 

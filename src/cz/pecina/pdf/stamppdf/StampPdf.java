@@ -103,9 +103,8 @@ public class StampPdf {
 	    	yOffset = reader.getPageSize(1).getHeight() + yOffset;
 	    }
 	    over.setTextMatrix(xOffset, yOffset);
-	    String[] lines = text.split("^");
-	    for (int i = 0; i < lines.length; i++) {
-		over.showText(lines[i]);
+	    for (String line: text.split("^")) {
+		over.showText(line);
 		over.newlineText();
 		over.endText();
 	    }
