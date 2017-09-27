@@ -81,7 +81,7 @@ public class StampPdf {
 	    final PdfStamper stamper = new PdfStamper(reader, fileOutputStream, '\0', true);
 	    final PdfContentByte over = stamper.getOverContent(1);
 	    over.beginText();
-	    final String resourcePath = "res/cz/pecina/pdf/stamppdf";
+	    final String resourcePath = "cz/pecina/pdf/stamppdf";
 	    final BaseFont baseFont = BaseFont.createFont(resourcePath + "/fonts/LiberationSans-Regular.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 	    over.setFontAndSize(baseFont, 9);
 	    over.setCharacterSpacing(0.1f);

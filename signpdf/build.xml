@@ -111,7 +111,8 @@
   <!-- jar -->
   <target name="jar" depends="clean,compile" description="Generate application JAR">
     <jar jarfile="${build.lib.dir}/${package}.jar" basedir="${build.classes.dir}">
-      <fileset dir="." includes="${resources.dir}/${prefix}/${package}/fonts/*.ttf"/>
+      <fileset dir="${resources.dir}" includes="${prefix}/${package}/fonts/*.ttf"/>
+      <fileset dir="${resources.dir}" includes="${prefix}/${package}/graphics/*.png"/>
       <zipfileset src="${lib.dir}/itextpdf.jar" includes="com/"/>
       <zipfileset src="${lib.dir}/commons-cli.jar" includes="org/"/>
       <zipfileset src="${lib.dir}/bcprov-ext-jdk.jar" includes="org/"/>

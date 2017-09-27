@@ -164,17 +164,17 @@ public class SignPdf {
 		    log.fine("Signature field is too small");
 		    System.exit(1);
 		}
-		final String resourcePath = "res/cz/pecina/pdf/signpdf";
 		String imageFileName = null;
 		if (parameters.getCertificationLevel() > 0) {
-		    imageFileName = resourcePath + "/graphics/sealcer.png";
+		    imageFileName = "sealcer.png";
 		} else {
-		    imageFileName = resourcePath + "/graphics/sealappr.png";
+		    imageFileName = "sealappr.png";
 		}
-		final Image image = Image.getInstance(imageFileName);
+		final Image image = Image.getInstance(SignPdf.class.getResource("graphics/" + imageFileName));
 		image.scaleToFit(10000f, 36f);
 		image.setAbsolutePosition(0f, (height - 36f));
 		n2.addImage(image);
+		final String resourcePath = "cz/pecina/pdf/signpdf";
 		final BaseFont brm = BaseFont.createFont(resourcePath + "/fonts/Carlito-Regular.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 		final BaseFont bbf = BaseFont.createFont(resourcePath + "/fonts/Carlito-Bold.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 		n2.beginText();
