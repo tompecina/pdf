@@ -192,7 +192,7 @@ public class Parameters {
     }
     
     /**
-     * Gets signature appand flag.
+     * Gets signature append flag.
      *
      * @return signature append flag (true=append)
      */
