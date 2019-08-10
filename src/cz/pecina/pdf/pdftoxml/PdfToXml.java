@@ -306,6 +306,7 @@ public class PdfToXml {
     private static void usage() {
 	final HelpFormatter helpFormatter = new HelpFormatter();
 	helpFormatter.printHelp("pdftoxml [options] infile [outfile]", options);
+	System.out.println("\nThe source code is available from <https://github.com/tompecina/pdf>.");
     }
 
     /**

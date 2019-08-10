@@ -76,6 +76,7 @@ public class Parameters {
         System.out.println("\nNotes:");
         System.out.println("  - Negative values of x/y mean offset from the right/top page margin");
         System.out.println("  - Character ^ in text is replaced with a newline");
+	System.out.println("\nThe source code is available from <https://github.com/tompecina/pdf>.");
     }
 
     // parsed parameters

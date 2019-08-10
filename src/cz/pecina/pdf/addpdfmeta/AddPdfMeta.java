@@ -82,6 +82,7 @@ public class AddPdfMeta {
     private static void usage() {
 	final HelpFormatter helpFormatter = new HelpFormatter();
 	helpFormatter.printHelp("addpdfmeta [options] infile metadatafile [outfile]", options);
+	System.out.println("\nThe source code is available from <https://github.com/tompecina/pdf>.");
     }
 
     /**

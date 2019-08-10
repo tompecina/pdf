@@ -118,6 +118,7 @@ public class AddPdfStream {
     private static void usage() {
 	final HelpFormatter helpFormatter = new HelpFormatter();
 	helpFormatter.printHelp("addpdfstream [options] infile streamfile [outfile]", options);
+	System.out.println("\nThe source code is available from <https://github.com/tompecina/pdf>.");
     }
 
     /**

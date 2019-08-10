@@ -143,6 +143,7 @@ public class Parameters {
     public void usage() {
 	final HelpFormatter helpFormatter = new HelpFormatter();
 	helpFormatter.printHelp("signpdf [options] infile [outfile]", options);
+	System.out.println("\nThe source code is available from <https://github.com/tompecina/pdf>.");
     }
 
     // parsed parameters

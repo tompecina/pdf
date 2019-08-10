@@ -110,6 +110,7 @@ public class Parameters {
 	helpFormatter.printHelp("signboxpdf [options] x y infile [outfile]", options);
         System.out.println("\nNotes:");
         System.out.println("  - Negative values of x/y mean offset from the right/top page margin");
+	System.out.println("\nThe source code is available from <https://github.com/tompecina/pdf>.");
     }
 
     // parsed parameters
