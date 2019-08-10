@@ -12,7 +12,7 @@
   <property name="version"
 	    value="1.0"/>
   <property name="license"
-	    value="GNU General Public License Version 3"/>
+	    value="GNU Affero General Public License Version 3"/>
   <property name="prefix"
 	    value="cz/pecina/pdf"/>
   <property name="src.dir"
@@ -29,6 +29,8 @@
 	    value="${test.dir}/lib"/>
   <property name="bin.dir"
 	    value="bin"/>
+  <property name="licenses.dir"
+	    value="licenses"/>
   <property name="build.dir"
 	    value="${package}/build"/>
   <property name="build.lib.dir"
@@ -118,6 +120,10 @@
 	   target="${javac.target.version}">
       <compilerarg value="-Xlint:deprecation"/>
     </javac>
+    <copy todir="${build.licenses.dir}">
+      <fileset dir="${licenses.dir}"
+	       includes="agpl-3.0.txt"/>
+    </copy>
   </target>
 
   <!-- javadoc -->
@@ -147,6 +153,9 @@
 		  includes="org/"/>
       <zipfileset src="${lib.dir}/commons-cli.jar"
 		  includes="org/"/>
+      <fileset dir="${licenses.dir}">
+	<filename name="*.txt"/>
+      </fileset>
       <manifest>
         <attribute name="Main-Class"
 		   value="cz.pecina.pdf.rmwmark.RmWmark"/>

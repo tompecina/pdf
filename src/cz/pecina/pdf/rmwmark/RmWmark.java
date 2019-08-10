@@ -141,9 +141,11 @@ public class RmWmark {
 	    final IEventListener listener = new Listener(doc, outDoc);
 
 	    for (int pageNumber = 1; pageNumber <= numberPages; pageNumber++) {
-		final PdfPage page = inDoc.getPage(pageNumber);
+		final PdfPage inPage = inDoc.getPage(pageNumber);
 		outDoc.addNewPage();
-		outDoc.getPage(pageNumber).setMediaBox(page.getMediaBox());
+		final PdfPage outPage = outDoc.getPage(pageNumber);
+		outPage.setMediaBox(inPage.getMediaBox());
+		outPage.setRotation(inPage.getRotation());
 		parser.processContent(pageNumber, listener);
 	    }
 	    doc.close();
