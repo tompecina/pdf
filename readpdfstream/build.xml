@@ -57,11 +57,13 @@
 	    value="1.8"/>
   <property name="tests"
 	    value="Test*"/>
+  <property name="itext.version"
+	    value="5.4.5"/>
 
   <!-- classpath -->
   <path id="base.path">
     <pathelement location="${build.classes.dir}"/>
-    <pathelement location="${lib.dir}/itextpdf.jar"/>
+    <pathelement location="${lib.dir}/itextpdf-${itext.version}.jar"/>
     <pathelement location="${lib.dir}/commons-cli.jar"/>
   </path>
 
@@ -129,7 +131,7 @@
 	  description="Generate application JAR">
     <jar jarfile="${build.lib.dir}/${package}.jar"
 	 basedir="${build.classes.dir}">
-      <zipfileset src="${lib.dir}/itextpdf.jar"
+      <zipfileset src="${lib.dir}/itextpdf-${itext.version}.jar"
 		  includes="com/"/>
       <zipfileset src="${lib.dir}/commons-cli.jar"
 		  includes="org/"/>
@@ -179,7 +181,7 @@
   <path id="test.base.path">
     <pathelement location="${build.classes.dir}"/>
     <pathelement location="${build.test.classes.dir}"/>
-    <pathelement location="${lib.dir}/itextpdf.jar"/>
+    <pathelement location="${lib.dir}/itextpdf-${itext.version}.jar"/>
     <pathelement location="${lib.dir}/commons-cli.jar"/>
     <pathelement location="${test.lib.dir}/junit.jar"/>
   </path>
