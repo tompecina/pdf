@@ -56,7 +56,7 @@
   <property name="tests"
 	    value="Test*"/>
   <property name="itext.version"
-	    value="5.4.5"/>
+	    value="5.5.13.1"/>
 
   <!-- classpath -->
   <path id="base.path">
