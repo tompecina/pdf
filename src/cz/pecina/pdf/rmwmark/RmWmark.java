@@ -1,6 +1,6 @@
 /* RmWmark.java
  *
- * Copyright (C) 2019, Tomas Pecina <tomas@pecina.cz>
+ * Copyright (C) 2015-19, Tomas Pecina <tomas@pecina.cz>
  *
  * This file is part of cz.pecina.pdf, a suite of PDF processing applications.
  *
