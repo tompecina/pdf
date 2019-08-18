@@ -4,7 +4,6 @@ name=$(basename "$0")
 realpath=$(realpath "$0")
 path=$(dirname "$realpath")
 
-echo $path
 case "$name" in
      addpdfmeta) class='cz.pecina.pdf.addpdfmeta.AddPdfMeta';;
      addpdfstream) class='cz.pecina.pdf.addpdfstream.AddPdfStream';;
@@ -19,4 +18,4 @@ case "$name" in
 esac
     
 cd $path/../target
-java -cp $(ls pdf-*-jar-with-dependencies.jar) $class "$*"
+java -cp $(ls pdf-*-jar-with-dependencies.jar) $class "$@"
