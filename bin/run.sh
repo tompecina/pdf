@@ -17,5 +17,4 @@ case "$name" in
      *) class='cz.pecina.pdf.PdfHelp';;
 esac
     
-cd $path/../target
-java -cp $(ls pdf-*-jar-with-dependencies.jar) $class "$@"
+java -cp $(find $path/../target/ -name 'pdf-*-jar-with-dependencies.jar' | sort | tail -n 1) $class "$@"
