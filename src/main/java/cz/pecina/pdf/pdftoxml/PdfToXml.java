@@ -22,6 +22,7 @@
 
 package cz.pecina.pdf.pdftoxml;
 
+import java.io.File;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Option;
@@ -241,9 +242,9 @@ public class PdfToXml {
 	    final Element streamElement = new Element("stream", NAMESPACE);
 	    streamElement.addContent(createObjectElement(new COSDictionary((COSDictionary)object), decompress));
 	    if (decompress) {
-		streamElement.addContent(createDataElement(((COSStream)object).getUnfilteredStream(), "data"));
+		streamElement.addContent(createDataElement(((COSStream)object).createInputStream(), "data"));
 	    } else {
-		streamElement.addContent(createDataElement(((COSStream)object).getFilteredStream(), "raw"));
+		streamElement.addContent(createDataElement(((COSStream)object).createRawInputStream(), "raw"));
 	    }
 	    return streamElement;
 	}
@@ -264,10 +265,10 @@ public class PdfToXml {
 	if (object instanceof COSObject) {
 	    final Element indirectReferenceElement = new Element("indirect-reference", NAMESPACE);
 	    final Element numberElement = new Element("number", NAMESPACE);
-	    numberElement.addContent("" + ((COSObject)object).getObjectNumber().intValue());
+	    numberElement.addContent("" + ((COSObject)object).getObjectNumber());
 	    indirectReferenceElement.addContent(numberElement);
 	    final Element generationElement = new Element("generation", NAMESPACE);
-	    generationElement.addContent("" + ((COSObject)object).getGenerationNumber().intValue());
+	    generationElement.addContent("" + ((COSObject)object).getGenerationNumber());
 	    indirectReferenceElement.addContent(generationElement);
 	    return indirectReferenceElement;
 	}
@@ -367,7 +368,7 @@ public class PdfToXml {
 	final String inFileName = fileNames[0];
 
 	try {
-	    final PDDocument pdDocument = PDDocument.load(inFileName);
+	    final PDDocument pdDocument = PDDocument.load(new File(inFileName));
 	    final COSDocument cosDocument = pdDocument.getDocument();
 	    
 	    final Element pdfElement = new Element("pdf", Namespace.getNamespace(NAMESPACE));
@@ -388,8 +389,8 @@ public class PdfToXml {
 	    final Element contentElement = new Element("content", NAMESPACE);
 	    for (COSObject object: cosDocument.getObjects()) {
 		final Element objectElement = new Element("object", NAMESPACE);
-		objectElement.setAttribute("number", "" + object.getObjectNumber().intValue());
-		objectElement.setAttribute("generation", "" + object.getGenerationNumber().intValue());
+		objectElement.setAttribute("number", "" + object.getObjectNumber());
+		objectElement.setAttribute("generation", "" + object.getGenerationNumber());
 		objectElement.addContent(createObjectElement(object.getObject(), decompress));
 		contentElement.addContent(objectElement);
 	    }
