@@ -31,14 +31,14 @@ import org.apache.commons.cli.HelpFormatter;
 import java.io.File;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import com.itextpdf.text.pdf.PdfReader;
-import com.itextpdf.text.pdf.PdfStamper;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.PdfDocument;
 import java.util.logging.Logger;
-import cz.pecina.pdf.addpdfmeta.ModifiedPdfStamper;
+import cz.pecina.pdf.addpdfmeta.ModifiedPdfDocument;
 
 /**
  * Adds metadata to existing PDF file.
@@ -129,18 +129,14 @@ public class AddPdfMeta {
 	    System.exit(1);
 	}
 
-	String inFileName = fileNames[0];
-	final String metadataFileName = fileNames[1];
+	byte[] inputData = null;
+	byte[] metadata = null;
 	String outFileName = null;
-	final String tempFileName = "/tmp/addpdfmeta.pdf";
+	
 	try {
-	    if (fileNames.length == 2) {
-		Files.copy(Paths.get(inFileName), Paths.get(tempFileName), StandardCopyOption.REPLACE_EXISTING);
-		outFileName = inFileName;
-		inFileName = tempFileName;
-	    } else {
-		outFileName = fileNames[2];
-	    }
+	    inputData = Files.readAllBytes(Paths.get(fileNames[0]));
+	    metadata = Files.readAllBytes(Paths.get(fileNames[1]));
+	    outFileName = fileNames[(fileNames.length == 2) ? 0 : 2];
 	} catch (Exception exception) {
 	    System.err.println("Error opening files, exception: " + exception);
 	    log.fine("Error opening files, exception: " + exception);
@@ -148,10 +144,13 @@ public class AddPdfMeta {
 	}
 
 	try {
-	    final PdfReader reader = new PdfReader(inFileName);
+	    final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
 	    final OutputStream fileOutputStream = new FileOutputStream(outFileName);
-	    final PdfStamper stamper = new ModifiedPdfStamper(reader, fileOutputStream, new FileInputStream(new File(metadataFileName)));
-	    stamper.close();
+	    final PdfWriter writer = new PdfWriter(fileOutputStream);
+	    final PdfDocument pdfDocument = new ModifiedPdfDocument(reader, writer, metadata);
+	    pdfDocument.close();
+	    writer.close();
+	    reader.close();
 	    fileOutputStream.close();
 	} catch (Exception exception) {
 	    System.err.println("Error processing files, exception: " + exception);
