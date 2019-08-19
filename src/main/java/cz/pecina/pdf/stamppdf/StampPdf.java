@@ -33,7 +33,6 @@ import com.itextpdf.text.pdf.PdfStamper;
 import com.itextpdf.text.pdf.BaseFont;
 import com.itextpdf.text.pdf.PdfContentByte;
 import java.util.logging.Logger;
-import cz.pecina.pdf.stamppdf.Parameters;
 
 /**
  * Stamp PDF file.

@@ -49,8 +49,6 @@ import com.itextpdf.text.pdf.security.MakeSignature;
 import com.itextpdf.text.pdf.security.CertificateInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.util.logging.Logger;
-import cz.pecina.pdf.signpdf.Parameters;
-import cz.pecina.pdf.signpdf.SignatureEvent;
 
 /**
  * Sign PDF file.

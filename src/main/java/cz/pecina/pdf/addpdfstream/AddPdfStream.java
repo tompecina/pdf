@@ -30,19 +30,17 @@ import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import java.util.Map;
 import java.util.HashMap;
-import java.io.OutputStream;
-import java.io.FileOutputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import com.itextpdf.text.pdf.PdfReader;
-import com.itextpdf.text.pdf.PdfStamper;
-import com.itextpdf.text.pdf.PdfStream;
-import com.itextpdf.text.pdf.PdfName;
-import com.itextpdf.text.pdf.PdfDictionary;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfStream;
+import com.itextpdf.kernel.pdf.CompressionConstants;
+import com.itextpdf.kernel.pdf.PdfName;
+import com.itextpdf.kernel.pdf.PdfCatalog;
+import com.itextpdf.kernel.pdf.PdfDictionary;
 import java.util.logging.Logger;
 
 /**
@@ -177,7 +175,7 @@ public class AddPdfStream {
 	}
 	
 	final boolean compress = (line.hasOption("c"));
-	int compressionLevel = PdfStream.DEFAULT_COMPRESSION;
+	int compressionLevel = CompressionConstants.DEFAULT_COMPRESSION;
 	if (line.hasOption("l")) {
 	    try {
 		compressionLevel = ((Number)line.getParsedOptionValue("l")).intValue();
@@ -193,7 +191,7 @@ public class AddPdfStream {
 	    }
 	}
 	if (!compress) {
-	    compressionLevel = PdfStream.NO_COMPRESSION;
+	    compressionLevel = CompressionConstants.NO_COMPRESSION;
 	}
 	
 	final String[] fileNames = line.getArgs();
@@ -204,18 +202,14 @@ public class AddPdfStream {
 	    System.exit(1);
 	}
 
-	String inFileName = fileNames[0];
-	final String streamDataFileName = fileNames[1];
+	byte[] inputData = null;
+	byte[] stream = null;
 	String outFileName = null;
-	final String tempFileName = "/tmp/addpdfstream.pdf";
+
 	try {
-	    if (fileNames.length == 2) {
-		Files.copy(Paths.get(inFileName), Paths.get(tempFileName), StandardCopyOption.REPLACE_EXISTING);
-		outFileName = inFileName;
-		inFileName = tempFileName;
-	    } else {
-		outFileName = fileNames[2];
-	    }
+	    inputData = Files.readAllBytes(Paths.get(fileNames[0]));
+	    stream = Files.readAllBytes(Paths.get(fileNames[1]));
+	    outFileName = fileNames[(fileNames.length == 2) ? 0 : 2];
 	} catch (Exception exception) {
 	    System.err.println("Error opening files, exception: " + exception);
 	    log.fine("Error opening files, exception: " + exception);
@@ -223,33 +217,25 @@ public class AddPdfStream {
 	}
 
 	try {
-	    final PdfReader reader = new PdfReader(inFileName);
-	    final ByteArrayOutputStream streamData = new ByteArrayOutputStream();
-	    final InputStream streamDataInputStream = new FileInputStream(streamDataFileName);
-	    while (true) {
-	    	int d = streamDataInputStream.read();
-	    	if (d < 0)
-	    	    break;
-	    	streamData.write(d);
-	    }
-	    final PdfStream stream = new PdfStream(streamData.toByteArray());
+	    final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
+	    final PdfWriter writer = new PdfWriter(outFileName);
+	    final PdfDocument pdfDocument = new PdfDocument(reader, writer);
+	    final PdfStream pdfStream = new PdfStream(pdfDocument, new ByteArrayInputStream(stream));
 	    for (String key: pairs.keySet()) {
-		stream.put(new PdfName(key), new PdfName(pairs.get(key)));
+	    	pdfStream.put(new PdfName(key), new PdfName(pairs.get(key)));
 	    }
 	    if (compress) {
-		stream.flateCompress(compressionLevel);
+	    	pdfStream.setCompressionLevel(compressionLevel);
 	    }
 	    final PdfName streamPdfName = new PdfName(streamType);
-	    final PdfDictionary catalog = reader.getCatalog();
-	    if (catalog.contains(streamPdfName)) {
-		System.out.println("Removing");
-		catalog.remove(streamPdfName);
+	    final PdfCatalog catalog = pdfDocument.getCatalog();
+	    if (((PdfDictionary)catalog.getPdfObject()).get(streamPdfName) != null) {
+	    	catalog.remove(streamPdfName);
 	    }
-	    catalog.put(streamPdfName, reader.addPdfObject(stream));
-	    final OutputStream fileOutputStream = new FileOutputStream(outFileName);
-	    final PdfStamper stamper = new PdfStamper(reader, fileOutputStream);
-	    stamper.close();
-	    fileOutputStream.close();
+	    catalog.put(streamPdfName, pdfStream);
+	    pdfDocument.close();
+	    writer.close();
+	    reader.close();
 	} catch (Exception exception) {
 	    System.err.println("Error processing files, exception: " + exception);
 	    log.fine("Error processing files, exception: " + exception);

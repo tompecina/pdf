@@ -45,7 +45,6 @@ import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.AreaBreak;
 import com.itextpdf.layout.property.AreaBreakType;
-import cz.pecina.pdf.rmwmark.Parameters;
 
 /**
  * Remove watermark from PDF file.

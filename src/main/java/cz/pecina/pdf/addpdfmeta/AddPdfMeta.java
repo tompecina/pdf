@@ -29,8 +29,6 @@ import org.apache.commons.cli.Options;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import java.io.File;
-import java.io.OutputStream;
-import java.io.FileOutputStream;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -38,7 +36,6 @@ import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import java.util.logging.Logger;
-import cz.pecina.pdf.addpdfmeta.ModifiedPdfDocument;
 
 /**
  * Adds metadata to existing PDF file.
@@ -145,13 +142,11 @@ public class AddPdfMeta {
 
 	try {
 	    final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
-	    final OutputStream fileOutputStream = new FileOutputStream(outFileName);
-	    final PdfWriter writer = new PdfWriter(fileOutputStream);
+	    final PdfWriter writer = new PdfWriter(outFileName);
 	    final PdfDocument pdfDocument = new ModifiedPdfDocument(reader, writer, metadata);
 	    pdfDocument.close();
 	    writer.close();
 	    reader.close();
-	    fileOutputStream.close();
 	} catch (Exception exception) {
 	    System.err.println("Error processing files, exception: " + exception);
 	    log.fine("Error processing files, exception: " + exception);

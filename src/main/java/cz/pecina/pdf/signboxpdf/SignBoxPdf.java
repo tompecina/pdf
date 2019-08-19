@@ -37,7 +37,6 @@ import com.itextpdf.text.pdf.PdfFormField;
 import com.itextpdf.text.pdf.PdfAnnotation;
 import com.itextpdf.text.pdf.PdfAppearance;
 import java.util.logging.Logger;
-import cz.pecina.pdf.signboxpdf.Parameters;
 
 /**
  * Stamp PDF file.
