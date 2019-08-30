@@ -31,6 +31,7 @@ import org.apache.commons.cli.HelpFormatter;
 import java.util.Map;
 import java.util.HashMap;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import com.itextpdf.kernel.pdf.PdfReader;
@@ -203,12 +204,10 @@ public class AddPdfStream {
 	}
 
 	byte[] inputData = null;
-	byte[] stream = null;
 	String outFileName = null;
 
 	try {
 	    inputData = Files.readAllBytes(Paths.get(fileNames[0]));
-	    stream = Files.readAllBytes(Paths.get(fileNames[1]));
 	    outFileName = fileNames[(fileNames.length == 2) ? 0 : 2];
 	} catch (Exception exception) {
 	    System.err.println("Error opening files, exception: " + exception);
@@ -220,7 +219,7 @@ public class AddPdfStream {
 	    final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
 	    final PdfWriter writer = new PdfWriter(outFileName);
 	    final PdfDocument pdfDocument = new PdfDocument(reader, writer);
-	    final PdfStream pdfStream = new PdfStream(pdfDocument, new ByteArrayInputStream(stream));
+	    final PdfStream pdfStream = new PdfStream(pdfDocument, new FileInputStream(fileNames[1]));
 	    for (String key: pairs.keySet()) {
 	    	pdfStream.put(new PdfName(key), new PdfName(pairs.get(key)));
 	    }

@@ -28,23 +28,35 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.HashMap;
+import java.util.Set;
 import java.security.Security;
 import java.security.cert.X509Certificate;
-import com.itextpdf.text.pdf.PdfReader;
-import com.itextpdf.text.pdf.AcroFields;
-import com.itextpdf.text.pdf.PdfDictionary;
-import com.itextpdf.text.pdf.PdfName;
-import com.itextpdf.text.pdf.PdfString;
-import com.itextpdf.text.pdf.PdfObject;
-import com.itextpdf.text.pdf.PdfArray;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.security.CertificateInfo;
-import com.itextpdf.text.pdf.security.PdfPKCS7;
-import com.itextpdf.text.pdf.security.SignaturePermissions;
-import com.itextpdf.text.pdf.security.CertificateUtil;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfIndirectReference;
+import com.itextpdf.kernel.pdf.PdfCatalog;
+import com.itextpdf.kernel.pdf.PdfDictionary;
+import com.itextpdf.kernel.pdf.PdfName;
+import com.itextpdf.kernel.pdf.PdfString;
+import com.itextpdf.kernel.pdf.PdfObject;
+import com.itextpdf.kernel.pdf.PdfArray;
+import com.itextpdf.kernel.pdf.PdfNumber;
+import com.itextpdf.kernel.pdf.PdfBoolean;
+import com.itextpdf.kernel.pdf.PdfNull;
+import com.itextpdf.kernel.pdf.PdfName;
+import com.itextpdf.kernel.pdf.PdfString;
+import com.itextpdf.kernel.pdf.annot.PdfWidgetAnnotation;
+import com.itextpdf.kernel.geom.Rectangle;
+import com.itextpdf.io.IOException;
+import com.itextpdf.io.font.PdfEncodings;
+import com.itextpdf.forms.PdfAcroForm;
+import com.itextpdf.forms.fields.PdfFormField;
+import com.itextpdf.signatures.SignatureUtil;
+import com.itextpdf.signatures.CertificateInfo;
+import com.itextpdf.signatures.PdfPKCS7;
+import com.itextpdf.signatures.SignaturePermissions;
+import com.itextpdf.signatures.CertificateUtil;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.tsp.TimeStampToken;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -105,18 +117,143 @@ public class InspectPdf {
 	}
     }
 
-    // print key:value pair, descending dictionary hierarchy tree
-    private static void printPair(String prefix, Object idx, PdfObject object) {
-	System.out.println(prefix + idx + ": " + object);
-	if (object.isDictionary()) {
-	    for (PdfName subKey: ((PdfDictionary)object).getKeys()) {
-		printPair(prefix + "  ", subKey, ((PdfDictionary)object).get(subKey)); 
+    // charset guess parameters
+    private final static int IMP = 0;  // impossible
+    private final static int REG = 1;  // regular
+    private final static int LLK = 2;  // less likely
+    private final static int UNL = 10;  // unlikely
+    private final static float UNL_LIM = 0.2f;
+    private final static char[] PDF_DOC_ENCODING_BYTE_LIKELYHOOD = {
+	IMP, IMP, IMP, IMP,  IMP, IMP, IMP, IMP,  IMP, IMP, IMP, IMP,  IMP, IMP, IMP, IMP,  // 00
+	IMP, IMP, IMP, IMP,  IMP, IMP, IMP, IMP,  UNL, UNL, UNL, UNL,  UNL, UNL, UNL, UNL,  // 10
+	REG, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, REG, REG,  // 20
+	REG, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, REG, REG,  // 30
+	REG, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, REG, REG,  // 40
+	REG, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, REG, REG,  // 50
+	LLK, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, REG, REG,  // 60
+	REG, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, LLK, IMP,  // 70
+	UNL, UNL, UNL, LLK,  UNL, LLK, UNL, UNL,  LLK, LLK, UNL, UNL,  LLK, LLK, LLK, LLK,  // 80
+	LLK, LLK, LLK, UNL,  UNL, LLK, LLK, LLK,  LLK, LLK, LLK, LLK,  LLK, LLK, LLK, IMP,  // 90
+	LLK, LLK, LLK, LLK,  LLK, LLK, UNL, LLK,  UNL, LLK, LLK, LLK,  UNL, IMP, LLK, UNL,  // a0
+	LLK, UNL, UNL, UNL,  UNL, UNL, UNL, UNL,  UNL, UNL, UNL, LLK,  UNL, UNL, UNL, LLK,  // b0
+	LLK, LLK, LLK, LLK,  LLK, LLK, LLK, LLK,  LLK, LLK, LLK, LLK,  LLK, LLK, LLK, LLK,  // c0
+	LLK, LLK, LLK, LLK,  LLK, LLK, LLK, UNL,  LLK, LLK, LLK, LLK,  LLK, LLK, LLK, LLK,  // d0
+	LLK, LLK, LLK, LLK,  LLK, LLK, LLK, LLK,  LLK, LLK, LLK, LLK,  LLK, LLK, LLK, LLK,  // e0
+	LLK, LLK, LLK, LLK,  LLK, LLK, LLK, UNL,  LLK, LLK, LLK, LLK,  LLK, LLK, LLK, LLK   // f0
+    };
+
+    /**
+     *
+     * Converts a PDF object to a string.
+     *
+     * @param obj the object to be printed
+     * @oaram level the level of embedding (-1 - contracted)
+     * @return the string value of obj
+     *
+     */
+    private static String stringify(final PdfObject obj, final int level) {
+	final int INDENT = 2;
+	if ((level != 0) && obj.isIndirect()) {
+	    final PdfIndirectReference ref = obj.getIndirectReference();
+	    return String.format("%d %d R", ref.getObjNumber(),ref.getGenNumber());
+	} else if (obj instanceof PdfDictionary) {
+	    final PdfDictionary dict = (PdfDictionary)obj;
+	    if (level < 0) {
+		final StringBuilder res = new StringBuilder("<< ");
+		for (PdfName key: dict.keySet()) {
+		    res.append(key.toString());
+		    res.append(' ');
+		    res.append(stringify(dict.get(key), -1));
+		    res.append(' ');
+		}
+		res.append(">>");
+		return res.toString();
+	    } else {
+		final String prefix = String.format("%" + ((level + 1) * INDENT) + "s", "");
+		final StringBuilder res = new StringBuilder();
+		final Set<PdfName> keys = dict.keySet();
+		for (PdfName key: keys) {
+		    final PdfObject sub = dict.get(key);
+		    res.append(String.format("%n%s%s: %s", prefix, key.getValue(), stringify(sub, level + 1)));
+		}
+		return res.toString();
 	    }
-	} else if (object.isStream()) {
-	    for (PdfName subKey: ((PdfDictionary)object).getKeys()) {
-		printPair(prefix + "  ", subKey, ((PdfDictionary)object).get(subKey)); 
+	} else if (obj instanceof PdfArray) {
+	    final StringBuilder res = new StringBuilder("[");
+	    boolean notFirst = false;
+	    for (PdfObject sub: (PdfArray)obj) {
+		if (notFirst) {
+		    res.append(' ');
+		}
+		notFirst = true;
+		res.append(stringify(sub, -1));
+	    }
+	    res.append(']');
+	    return res.toString();
+	} else if (obj instanceof PdfString) {
+	    final PdfString str = (PdfString)obj;
+	    final byte[] bytes = str.getValueBytes();
+	    final StringBuilder res = new StringBuilder();
+	    String substr = null;
+	    if ((bytes.length > 2) && (bytes[0] == (byte)0xfe) && (bytes[1] == (byte)0xff)) {
+		try {
+		    substr = PdfEncodings.convertToString(bytes, PdfEncodings.UNICODE_BIG);
+		} catch (IOException exception) {
+		    substr = null;
+		}
+	    } else {
+		int score = 0;
+		for (byte ch: bytes) {
+		    int inc = PDF_DOC_ENCODING_BYTE_LIKELYHOOD[ch & 0xff];
+		    if (inc == IMP) {
+			score = 0;
+			break;
+		    }
+		    score += inc;
+		}
+		if ((score > 0) && (((score - bytes.length) <= (UNL_LIM * bytes.length)))) {
+		    try {
+			substr = PdfEncodings.convertToString(bytes, PdfEncodings.PDF_DOC_ENCODING);
+		    } catch (IOException exception) {
+			substr = null;
+		    }
+		}
+	    }
+	    if (substr == null) {
+		res.append('<');
+		for (byte ch: str.getValueBytes()) {
+		    res.append(String.format("%02X", ch));
+		}
+		res.append('>');
+		return res.toString();
+	    }
+	    if (level < 0) {
+	    	res.insert(0, '(');
+	    	for (char ch: substr.toCharArray()) {
+	    	    if ((ch == '(') || (ch == ')')) {
+	    		res.append("\\");
+	    	    }
+	    	    res.append(ch);
+	    	}
+	    	res.append(')');
+	    	return res.toString();
+	    } else {
+	    	return substr.toString();
 	    }
 	}
+	return obj.toString();
+    }
+
+    /**
+     *
+     * Converts a PDF object to a string.
+     *
+     * @param obj the object to be printed
+     * @return the string value of obj
+     *
+     */
+    private static String stringify(final PdfObject obj) {
+	return stringify(obj, 0);
     }
 
     /**
@@ -181,54 +318,30 @@ public class InspectPdf {
 
 	try {
 	    final PdfReader reader = new PdfReader((line.getArgs())[0]);
+	    final PdfDocument pdfDocument = new PdfDocument(reader);
 
-	    System.out.println("PDF version: 1." + reader.getPdfVersion());
+	    System.out.println("Version: " + pdfDocument.getPdfVersion());
+
+	    System.out.println();
+	    System.out.println("Number of pages: " + pdfDocument.getNumberOfPages());
+
+	    final PdfDictionary trailer = pdfDocument.getTrailer();
+	    System.out.println();
+	    System.out.print("Trailer:");
+	    System.out.println(stringify(trailer));
+
+	    System.out.println();
+	    System.out.print("Info:");
+	    System.out.println(stringify(trailer.get(PdfName.Info)));
 	    System.out.println();
 
-	    System.out.println("Number of pages: " + reader.getNumberOfPages());
-	    System.out.println();
-
-	    final PdfDictionary trailer = reader.getTrailer();
-	    System.out.println("Trailer:");
-	    for (PdfName key: trailer.getKeys()) {
-		if (key.equals(new PdfName("ID"))) {
-		    System.out.print("  " + key + ": [");
-		    boolean first = true;
-		    for (PdfObject part: (PdfArray)(trailer.get(key))) {
-			if (first) {
-			    first = false;
-			} else {
-			    System.out.print(" ");
-			}
-			System.out.print("<");
-			for (byte ch: part.toString().getBytes()) {
-			    System.out.print(String.format("%02X", ch));
-			}
-			System.out.print(">");
-		    }
-		    System.out.println("]");
-		} else {
-		    printPair("  ", key, trailer.get(key));
-		}
-	    }
-	    System.out.println();
-
-	    final HashMap<String,String> info = reader.getInfo();
-	    System.out.println("Info:");
-	    for (String key: info.keySet()) {
-		System.out.println("  " + key + ": " + info.get(key));
-	    }
-	    System.out.println();
-	    
-	    final PdfDictionary catalog = reader.getCatalog();
-	    System.out.println("Catalog:");
-	    for (PdfName key: catalog.getKeys()) {
-		printPair("  ", key, catalog.get(key));
-	    }
+	    final PdfCatalog catalog = pdfDocument.getCatalog();
+	    System.out.print("Catalog:");
+	    System.out.println(stringify(trailer.get(PdfName.Root)));
 	    System.out.println();
 
 	    if (printMetadata) {
-		final byte[] metadata = reader.getMetadata();
+		final byte[] metadata = pdfDocument.getXmpMetadata();
 		System.out.println("Metadata:");
 		if (metadata == null) {
 		    System.out.println("  None");
@@ -237,86 +350,99 @@ public class InspectPdf {
 		}
 		System.out.println();
 	    }
-	    
-	    final AcroFields acroFields = reader.getAcroFields();
-	    final ArrayList<String> names = acroFields.getSignatureNames();
-	    SignaturePermissions permissions = null;
-	    for (String name: names) {
-		System.out.println(String.format("Signature '%s':", name));
-		System.out.println("  Signature covers whole document: " + yn(acroFields.signatureCoversWholeDocument(name)));
-		System.out.println("  Document revision: " + acroFields.getRevision(name) + " of " + acroFields.getTotalRevisions());
-		final PdfPKCS7 pkcs7 = acroFields.verifySignature(name);
-		System.out.println("  Integrity check: " + yn(pkcs7.verify()));
-		final List<AcroFields.FieldPosition> fieldPositions = acroFields.getFieldPositions(name);
-		if (!fieldPositions.isEmpty()) {
-		    final AcroFields.FieldPosition fieldPosition = fieldPositions.get(0);
-		    final Rectangle position = fieldPosition.position;
-		    if ((position.getWidth() == 0f) || (position.getHeight() == 0f)) {
-			System.out.println("  Invisible signature");
+
+	    final SignatureUtil util = new SignatureUtil(pdfDocument);
+	    final List<String> names = util.getSignatureNames();
+	    if (!names.isEmpty()) {
+		final PdfAcroForm acroForm = PdfAcroForm.getAcroForm(pdfDocument, false);
+		SignaturePermissions permissions = null;
+		for (String name: names) {
+		    System.out.println(String.format("Signature '%s':", name));
+		    System.out.println("  Signature covers whole document: " + yn(util.signatureCoversWholeDocument(name)));
+		    System.out.println("  Document revision: " + util.getRevision(name) + " of " + util.getTotalRevisions());
+		    final PdfPKCS7 pkcs7 = util.verifySignature(name);
+		    System.out.println("  Integrity check: " + yn(pkcs7.verify()));
+		    final PdfFormField field = acroForm.getField(name);
+		    if (field != null) {
+			final List<PdfWidgetAnnotation> widgets = field.getWidgets();
+			if (!widgets.isEmpty()) {
+			    final PdfWidgetAnnotation widget = widgets.get(0);
+			    final Rectangle position = widget.getRectangle().toRectangle();
+			    if ((position.getWidth() == 0f) || (position.getHeight() == 0f)) {
+				System.out.println("  Invisible signature");
+			    } else {
+				final int page = pdfDocument.getPageNumber(widget.getPage());
+				System.out.println(String.format("  Field on page %d; llx: %f, lly: %f, urx: %f; ury: %f", page, position.getLeft(), position.getBottom(), position.getRight(), position.getTop()));
+			    }
+			} else {
+			    System.out.println("  Invisible signature (no widget)");
+			}
 		    } else {
-			System.out.println(String.format("  Field on page %d; llx: %f, lly: %f, urx: %f; ury: %f", fieldPosition.page, position.getLeft(), position.getBottom(), position.getRight(), position.getTop()));
+			System.out.println("  Invisible signature (no field)");
 		    }
-		}
-		System.out.println("  Digest algorithm: " + pkcs7.getHashAlgorithm());
-		System.out.println("  Encryption algorithm: " + pkcs7.getEncryptionAlgorithm());
-		System.out.println("  Filter subtype: " + pkcs7.getFilterSubtype());
-		final X509Certificate certificate = pkcs7.getSigningCertificate();
-		System.out.println("  Name of the signer: " + CertificateInfo.getSubjectFields(certificate).getField("CN"));
-		if (pkcs7.getSignName() != null) {
-		    System.out.println("  Alternative name of the signer :" + pkcs7.getSignName());
-		}
-		System.out.println("  Signed on: " + pkcs7.getSignDate().getTime());
-		if (pkcs7.getTimeStampDate() != null) {
-		    System.out.println("  TimeStamp: " + pkcs7.getTimeStampDate().getTime());
-		    final TimeStampToken timeStamp = pkcs7.getTimeStampToken();
-		    System.out.println("  TimeStamp service: " + timeStamp.getTimeStampInfo().getTsa());
-		    System.out.println("  TimeStamp verified: " + yn(pkcs7.verifyTimestampImprint()));
-		    final X509CertificateHolder holder = (X509CertificateHolder)(timeStamp.getCertificates().getMatches(null).iterator().next());
-		    System.out.println("  TimeStamp valid from: " + holder.getNotBefore());
-		    System.out.println("  TimeStamp valid to: " + holder.getNotAfter());
-		}
-		System.out.println("  Location: " + pkcs7.getLocation());
-		System.out.println("  Reason: " + pkcs7.getReason());
-		final PdfDictionary signatureDictionary = acroFields.getSignatureDictionary(name);
-		final PdfString contact = signatureDictionary.getAsString(PdfName.CONTACTINFO);
-		System.out.println("  Contact info: " + contact);
-		permissions = new SignaturePermissions(signatureDictionary, permissions);
-		String signatureType;
-		if (permissions.isCertification()) {
-		    signatureType = "certification";
-		} else {
-		    signatureType = "approval";
-		}
-		System.out.println("  Signature type: " + signatureType);
-		System.out.println("  Filling out fields allowed: " + yn(permissions.isFillInAllowed()));
-		System.out.println("  Adding annotations allowed: " + yn(permissions.isAnnotationsAllowed()));
-		for (SignaturePermissions.FieldLock fieldLock: permissions.getFieldLocks()) {
-		    System.out.println("  Lock: " + fieldLock.toString());
-		}
-		for (X509Certificate chainCertificate: (X509Certificate[])pkcs7.getSignCertificateChain()) {
-		    System.out.println();
-		    System.out.println("  Issuer: " + chainCertificate.getIssuerX500Principal());
-		    System.out.println("  Subject: " + chainCertificate.getSubjectX500Principal());
-		    System.out.println("  Valid from: " + chainCertificate.getNotBefore());
-		    System.out.println("  Valid to: " + chainCertificate.getNotAfter());
-		    System.out.println("  CRL: " + CertificateUtil.getCRLURL(chainCertificate));
-		    System.out.println();
+		    System.out.println("  Digest algorithm: " + pkcs7.getHashAlgorithm());
+		    System.out.println("  Encryption algorithm: " + pkcs7.getEncryptionAlgorithm());
+		    System.out.println("  Filter subtype: " + pkcs7.getFilterSubtype());
+		    final X509Certificate certificate = pkcs7.getSigningCertificate();
+		    System.out.println("  Name of the signer: " + CertificateInfo.getSubjectFields(certificate).getField("CN"));
+		    if (pkcs7.getSignName() != null) {
+			System.out.println("  Alternative name of the signer :" + pkcs7.getSignName());
+		    }
+		    System.out.println("  Signed on: " + pkcs7.getSignDate().getTime());
+		    if (pkcs7.getTimeStampDate() != null) {
+			System.out.println("  TimeStamp: " + pkcs7.getTimeStampDate().getTime());
+			final TimeStampToken timeStamp = pkcs7.getTimeStampToken();
+			System.out.println("  TimeStamp service: " + timeStamp.getTimeStampInfo().getTsa());
+			System.out.println("  TimeStamp verified: " + yn(pkcs7.verifyTimestampImprint()));
+			final X509CertificateHolder holder = (X509CertificateHolder)(timeStamp.getCertificates().getMatches(null).iterator().next());
+			System.out.println("  TimeStamp valid from: " + holder.getNotBefore());
+			System.out.println("  TimeStamp valid to: " + holder.getNotAfter());
+		    }
+		    System.out.println("  Location: " + pkcs7.getLocation());
+		    System.out.println("  Reason: " + pkcs7.getReason());
+		    final PdfDictionary signatureDictionary = util.getSignatureDictionary(name);
+		    final PdfString contact = signatureDictionary.getAsString(PdfName.ContactInfo);
+		    System.out.println("  Contact info: " + contact);
+		    permissions = new SignaturePermissions(signatureDictionary, permissions);
+		    String signatureType;
+		    if (permissions.isCertification()) {
+			signatureType = "certification";
+		    } else {
+			signatureType = "approval";
+		    }
+		    System.out.println("  Signature type: " + signatureType);
+		    System.out.println("  Filling out fields allowed: " + yn(permissions.isFillInAllowed()));
+		    System.out.println("  Adding annotations allowed: " + yn(permissions.isAnnotationsAllowed()));
+		    for (SignaturePermissions.FieldLock fieldLock: permissions.getFieldLocks()) {
+			System.out.println("  Lock: " + fieldLock.toString());
+		    }
+		    for (X509Certificate chainCertificate: (X509Certificate[])pkcs7.getSignCertificateChain()) {
+			System.out.println();
+			System.out.println("  Issuer: " + chainCertificate.getIssuerX500Principal());
+			System.out.println("  Subject: " + chainCertificate.getSubjectX500Principal());
+			System.out.println("  Valid from: " + chainCertificate.getNotBefore());
+			System.out.println("  Valid to: " + chainCertificate.getNotAfter());
+			System.out.println("  CRL: " + CertificateUtil.getCRLURL(chainCertificate));
+			System.out.println();
+		    }
 		}
 	    }
 
 	    if (listObjects) {
-		final int xrefSize = reader.getXrefSize();
-		System.out.println("Number of objects: " + xrefSize);
-		for (int i = 0; i < xrefSize; i++) {
-		    try {
-			final PdfObject pdfObject = reader.getPdfObject(i);
-			if (pdfObject != null) {
-			    printPair("  ", i, pdfObject);
-			}
-		    } catch (Exception e) { }			
-		}
-		System.out.println();
+	    	final int numObjects = pdfDocument.getNumberOfPdfObjects();
+	    	System.out.println("Number of objects: " + numObjects);
+	    	System.out.println();
+	    	for (int i = 0; i < numObjects; i++) {
+		    
+	    	    try {
+	    		final PdfObject pdfObject = pdfDocument.getPdfObject(i);
+	    		if (pdfObject != null) {
+	    		    System.out.println(String.format("%d:%s%n", i, stringify(pdfObject)));
+	    		}
+	    	    } catch (Exception e) { }			
+	    	}
 	    }
+
     	} catch (Exception exception) {
 	    System.err.println("Error processing files, exception: " + exception);
 	    log.fine("Error processing files, exception: " + exception);
