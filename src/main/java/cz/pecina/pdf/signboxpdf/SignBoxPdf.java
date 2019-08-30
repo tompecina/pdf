@@ -24,18 +24,17 @@ package cz.pecina.pdf.signboxpdf;
 
 import java.io.OutputStream;
 import java.io.FileOutputStream;
+import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.pdf.PdfReader;
-import com.itextpdf.text.pdf.PdfWriter;
-import com.itextpdf.text.pdf.PdfStamper;
-import com.itextpdf.text.pdf.PdfFormField;
-import com.itextpdf.text.pdf.PdfAnnotation;
-import com.itextpdf.text.pdf.PdfAppearance;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.kernel.pdf.extgstate.PdfExtGState;
+import com.itextpdf.forms.fields.PdfFormField;
+import com.itextpdf.kernel.geom.Rectangle;
+import com.itextpdf.kernel.colors.DeviceRgb;
 import java.util.logging.Logger;
 
 /**
@@ -84,26 +83,23 @@ public class SignBoxPdf {
 	}
 
 	try {
-	    final PdfReader reader = new PdfReader(inputData);
-	    final OutputStream fileOutputStream = new FileOutputStream(outFileName);
-	    final PdfStamper stamper = new PdfStamper(reader, fileOutputStream, '\0');
-	    final PdfWriter writer = stamper.getWriter();
-	    final PdfFormField field = PdfFormField.createSignature(writer);
+	    final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
+	    final PdfWriter writer = new PdfWriter(new FileOutputStream(outFileName));
+	    final PdfDocument pdfDocument = new PdfDocument(reader, writer);
+	    final Rectangle rect = new Rectangle(xOffset, yOffset, xOffset + width, yOffset + height);
+	    final PdfFormField field = PdfFormField.createSignature(pdfDocument, rect);
 	    field.setFieldName(signatureFieldName);
 	    field.setPage(page);
-	    field.setWidget(
-		new Rectangle(xOffset, yOffset, xOffset + width, yOffset + height),
-		PdfAnnotation.HIGHLIGHT_NONE);
-	    field.setFlags(PdfAnnotation.FLAGS_PRINT);
-	    final PdfAppearance app = PdfAppearance.createAppearance(writer, width, height);
-	    app.setColorFill(new BaseColor(.9f, .92f, 1f));
-	    app.setLineWidth(0);
-	    app.rectangle(0f, 0f, width, height);
-	    app.fill();
-	    field.setAppearance(PdfAnnotation.APPEARANCE_NORMAL, app);
-	    stamper.addAnnotation(field, page);
-	    stamper.close();
-	    fileOutputStream.close();
+	    final PdfCanvas canvas = new PdfCanvas(pdfDocument.getPage(page));
+	    final PdfExtGState extGState = new PdfExtGState();
+	    extGState.setBlendMode(PdfExtGState.BM_MULTIPLY);
+	    canvas.setExtGState(extGState);
+	    canvas.rectangle(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
+	    canvas.setFillColor(new DeviceRgb(.9f, .92f, 1f));
+	    canvas.fill();                         
+	    canvas.release();
+	    pdfDocument.close();
+	    writer.close();
 	    reader.close();
     	} catch (Exception exception) {
 	    System.err.println("Error processing files, exception: " + exception);
