@@ -28,11 +28,11 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import com.itextpdf.text.pdf.PdfReader;
-import com.itextpdf.text.pdf.PdfStream;
-import com.itextpdf.text.pdf.PRStream;
-import com.itextpdf.text.pdf.PdfName;
-import com.itextpdf.text.pdf.PdfDictionary;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfStream;
+import com.itextpdf.kernel.pdf.PdfName;
+import com.itextpdf.kernel.pdf.PdfDictionary;
 import java.util.logging.Logger;
 
 /**
@@ -149,22 +149,23 @@ public class ReadPdfStream {
 
 	try {
 	    final PdfReader reader = new PdfReader(inFileName);
-	    final PdfDictionary catalog = reader.getCatalog();
+	    final PdfDocument pdfDocument = new PdfDocument(reader);
+	    final PdfDictionary catalog = (PdfDictionary)(pdfDocument.getCatalog().getPdfObject());
 	    final PdfName streamPdfName = new PdfName(streamType);
-	    if (!catalog.contains(streamPdfName)) {
+	    if (!catalog.containsKey(streamPdfName)) {
 		System.err.println("Stream '" + streamType + "' not found");
 		log.fine("Stream not found");
 		System.exit(1);
 	    }
 	    final PdfStream pdfStream = catalog.getAsStream(streamPdfName);
 	    if (verbose) {
-		System.out.println(pdfStream);
-		for (PdfName key: pdfStream.getKeys()) {
-		    System.out.println("  " + key + ": " + pdfStream.get(key));
-		}
-		System.out.println();
+	    	System.out.println("Dictionary:");
+	    	for (PdfName key: pdfStream.keySet()) {
+	    	    System.out.println("  " + key + ": " + pdfStream.get(key));
+	    	}
+	    	System.out.println();
 	    }
-	    System.out.print(new String(reader.getStreamBytes((PRStream)pdfStream), "utf-8"));
+	    System.out.print(new String(pdfStream.getBytes(), "utf-8"));
 	} catch (Exception exception) {
 	    System.err.println("Error processing files, exception: " + exception);
 	    log.fine("Error processing files, exception: " + exception);
