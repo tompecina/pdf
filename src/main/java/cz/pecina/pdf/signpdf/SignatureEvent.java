@@ -22,12 +22,11 @@
 
 package cz.pecina.pdf.signpdf;
 
-
 import com.itextpdf.kernel.pdf.PdfDictionary;
 import com.itextpdf.kernel.pdf.PdfName;
 
-import com.itextpdf.signatures.PdfSigner;
 import com.itextpdf.signatures.PdfSignature;
+import com.itextpdf.signatures.PdfSigner;
 
 
 /**
@@ -38,41 +37,42 @@ import com.itextpdf.signatures.PdfSignature;
  */
 public class SignatureEvent implements PdfSigner.ISignatureEvent {
 
-    // for description see Object
-    @Override
-    public String toString() {
-	return "SignatureEvent";
-    }
+  // for description see Object
+  @Override
+  public String toString() {
+    return "SignatureEvent";
+  }
 
-    // local copies of field settings
-    private String reason;
-    private String location;
-    private String contact;
+  // local copies of field settings
+  private String reason;
+  private String location;
+  private String contact;
     
-    /**
-     * Default constructor.
-     *
-     * @param reason   signature reason
-     * @param location signature location
-     * @param contact  signer's contact information
-     */
-    public SignatureEvent(String reason, String location, String contact) {
-	this.reason = reason;
-	this.location = location;
-	this.contact = contact;
-    }
+  /**
+   * Default constructor.
+   *
+   * @param reason   signature reason
+   * @param location signature location
+   * @param contact  signer's contact information
+   */
+  public SignatureEvent(String reason, String location, String contact) {
+    this.reason = reason;
+    this.location = location;
+    this.contact = contact;
+  }
 
-    // for description see PdfSignatureAppearance.SignatureEvent
-    public void getSignatureDictionary(final PdfSignature sig) {
-	final PdfDictionary dict = (PdfDictionary)(sig.getPdfObject());
-	if (reason == null) {
-	    dict.remove(PdfName.Reason);
-	}
-	if (location == null) {
-	    dict.remove(PdfName.Location);
-	}
-	if (contact == null) {
-	    dict.remove(PdfName.ContactInfo);
-	}
+  // for description see PdfSignatureAppearance.SignatureEvent
+  @Override
+  public void getSignatureDictionary(final PdfSignature sig) {
+    final PdfDictionary dict = (PdfDictionary)(sig.getPdfObject());
+    if (reason == null) {
+      dict.remove(PdfName.Reason);
     }
+    if (location == null) {
+      dict.remove(PdfName.Location);
+    }
+    if (contact == null) {
+      dict.remove(PdfName.ContactInfo);
+    }
+  }
 }

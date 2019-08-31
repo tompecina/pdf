@@ -22,12 +22,11 @@
 
 package cz.pecina.pdf.addpdfmeta;
 
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfWriter;
 
 import java.util.logging.Logger;
-
-import com.itextpdf.kernel.pdf.PdfReader;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfWriter;
 
 
 /**
@@ -38,24 +37,25 @@ import com.itextpdf.kernel.pdf.PdfWriter;
  */
 public class ModifiedPdfDocument extends PdfDocument {
 
-    // static logger
-    private static final Logger log = Logger.getLogger(ModifiedPdfDocument.class.getName());
+  // static logger
+  private static final Logger LOG = Logger.getLogger(ModifiedPdfDocument.class.getName());
 
-    /** Starts the process of adding extra content to an existing PDF
-     * document.
-     * <p>
-     * The reader will be closed when this PdfDocument is closed
-     *
-     * @param  reader the original document. It cannot be reused
-     * @param  writer the new writer
-     * @param  metadata the metadata
-     */
-    public ModifiedPdfDocument(final PdfReader reader, final PdfWriter writer, final byte[] metadata) {
-        super(reader, writer);
-	xmpMetadata = metadata;
-    }
+  /**
+   * Starts the process of adding extra content to an existing PDF
+   * document.
+   *
+   * <p>The reader will be closed when this PdfDocument is closed
+   *
+   * @param  reader the original document. It cannot be reused
+   * @param  writer the new writer
+   * @param  metadata the metadata
+   */
+  public ModifiedPdfDocument(final PdfReader reader, final PdfWriter writer, final byte[] metadata) {
+    super(reader, writer);
+    xmpMetadata = metadata;
+  }
 
-    // for description see PdfDocument
-    protected void updateXmpMetadata() {
-    }
+  // for description see PdfDocument
+  protected void updateXmpMetadata() {
+  }
 }

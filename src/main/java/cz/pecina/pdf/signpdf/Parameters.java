@@ -22,15 +22,14 @@
 
 package cz.pecina.pdf.signpdf;
 
-
 import java.util.logging.Logger;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
 
 
 /**
@@ -41,327 +40,327 @@ import org.apache.commons.cli.HelpFormatter;
  */
 public class Parameters {
 
-    // static logger
-    private static final Logger log = Logger.getLogger(Parameters.class.getName());
+  // static logger
+  private static final Logger LOG = Logger.getLogger(Parameters.class.getName());
 
-    // options
-    private static final Options options = new Options();
-    static {
-    	options.addOption(
-    	    Option.builder("?")
-    	         .longOpt("help")
-    	         .desc("show usage information")
-    	         .build()
-    	    );
-    	options.addOption(
-    	    Option.builder("V")
-    	         .longOpt("version")
-    	         .desc("show version")
-    	         .build()
-    	    );
-    	options.addOption(
-    	    Option.builder("k")
-    	         .longOpt("key")
-    	         .hasArg()
-    	         .argName("FILE")
-    	         .desc("(required) key file")
-    	         .build()
-    	    );
-    	options.addOption(
-    	    Option.builder("p")
-    	         .longOpt("pass")
-    	         .hasArg()
-    	         .argName("PASSWORD")
-    	         .desc("password")
-    	         .build()
-    	    );
-    	options.addOption(
-    	    Option.builder("c")
-    	         .longOpt("cert-level")
-    	         .hasArg()
-    	         .type(Number.class)
-    	         .argName("LEVEL")
-    	         .desc("certification level (O-3)")
-    	         .build()
-    	    );
-    	options.addOption(
-    	    Option.builder("f")
-    	         .longOpt("field")
-    	         .hasArg()
-    	         .argName("FIELD")
-    	         .desc("signature field name (if none, invisible signature is created)")
-    	         .build()
-    	    );
-    	options.addOption(
-    	    Option.builder("a")
-    	         .longOpt("append")
-    	         .desc("append signature as an update")
-    	         .build()
-    	    );
-    	options.addOption(
-    	    Option.builder("r")
-    	         .longOpt("reason")
-    	         .hasArg()
-    	         .argName("REASON")
-    	         .desc("reason")
-    	         .build()
-    	    );
-    	options.addOption(
-    	    Option.builder("l")
-    	         .longOpt("location")
-    	         .hasArg()
-    	         .argName("LOCATION")
-    	         .desc("location")
-    	         .build()
-    	    );
-    	options.addOption(
-    	    Option.builder("o")
-    	         .longOpt("contact")
-    	         .hasArg()
-    	         .argName("CONTACT")
-    	         .desc("contact information")
-    	         .build()
-    	    );
-    	options.addOption(
-    	    Option.builder("A")
-    	         .longOpt("alias")
-    	         .hasArg()
-    	         .argName("ALIAS")
-    	         .desc("alias in keystore (in none, first alias is used)")
-    	         .build()
-    	    );
-    }
+  // options
+  private static final Options options = new Options();
+
+  static {
+    options.addOption(
+                      Option.builder("?")
+                      .longOpt("help")
+                      .desc("show usage information")
+                      .build()
+                      );
+    options.addOption(
+                      Option.builder("V")
+                      .longOpt("version")
+                      .desc("show version")
+                      .build()
+                      );
+    options.addOption(
+                      Option.builder("k")
+                      .longOpt("key")
+                      .hasArg()
+                      .argName("FILE")
+                      .desc("(required) key file")
+                      .build()
+                      );
+    options.addOption(
+                      Option.builder("p")
+                      .longOpt("pass")
+                      .hasArg()
+                      .argName("PASSWORD")
+                      .desc("password")
+                      .build()
+                      );
+    options.addOption(
+                      Option.builder("c")
+                      .longOpt("cert-level")
+                      .hasArg()
+                      .type(Number.class)
+                      .argName("LEVEL")
+                      .desc("certification level (O-3)")
+                      .build()
+                      );
+    options.addOption(
+                      Option.builder("f")
+                      .longOpt("field")
+                      .hasArg()
+                      .argName("FIELD")
+                      .desc("signature field name (if none, invisible signature is created)")
+                      .build()
+                      );
+    options.addOption(
+                      Option.builder("a")
+                      .longOpt("append")
+                      .desc("append signature as an update")
+                      .build()
+                      );
+    options.addOption(
+                      Option.builder("r")
+                      .longOpt("reason")
+                      .hasArg()
+                      .argName("REASON")
+                      .desc("reason")
+                      .build()
+                      );
+    options.addOption(
+                      Option.builder("l")
+                      .longOpt("location")
+                      .hasArg()
+                      .argName("LOCATION")
+                      .desc("location")
+                      .build()
+                      );
+    options.addOption(
+                      Option.builder("o")
+                      .longOpt("contact")
+                      .hasArg()
+                      .argName("CONTACT")
+                      .desc("contact information")
+                      .build()
+                      );
+    options.addOption(
+                      Option.builder("A")
+                      .longOpt("alias")
+                      .hasArg()
+                      .argName("ALIAS")
+                      .desc("alias in keystore (in none, first alias is used)")
+                      .build()
+                      );
+  }
     
-    // for description see Object
-    @Override
-    public String toString() {
-	return "Parameters";
-    }
+  // for description see Object
+  @Override
+  public String toString() {
+    return "Parameters";
+  }
 
-    /**
-     *
-     * Prints usage information.
-     *
-     */
-    public void usage() {
-	final HelpFormatter helpFormatter = new HelpFormatter();
-	helpFormatter.printHelp("signpdf [options] infile [outfile]", options);
-	System.out.println("\nThe source code is available from <https://github.com/tompecina/pdf>.");
-    }
+  /**
+   * Prints usage information.
+   *
+   */
+  public void usage() {
+    final HelpFormatter helpFormatter = new HelpFormatter();
+    helpFormatter.printHelp("signpdf [options] infile [outfile]", options);
+    System.out.println("\nThe source code is available from <https://github.com/tompecina/pdf>.");
+  }
 
-    // parsed parameters
-    private String keyFileName;
-    private char[] password = null;
-    private int certificationLevel = 1;
-    private String signatureFieldName = null;
-    private boolean signatureAppend;
-    private String reason = null;
-    private String location = null;
-    private String contact = null;
-    private String alias = null;
-    private String[] fileNames;
+  // parsed parameters
+  private String keyFileName;
+  private char[] password = null;
+  private int certificationLevel = 1;
+  private String signatureFieldName = null;
+  private boolean signatureAppend;
+  private String reason = null;
+  private String location = null;
+  private String contact = null;
+  private String alias = null;
+  private String[] fileNames;
 
-    /**
-     * Gets key file name.
-     *
-     * @return key file name
-     */
-    public String getKeyFileName() {
-	return keyFileName;
-    }
+  /**
+   * Gets key file name.
+   *
+   * @return key file name
+   */
+  public String getKeyFileName() {
+    return keyFileName;
+  }
     
-    /**
-     * Gets password.
-     *
-     * @return password as character array
-     */
-    public char[] getPassword() {
-	return password;
-    }
+  /**
+   * Gets password.
+   *
+   * @return password as character array
+   */
+  public char[] getPassword() {
+    return password;
+  }
     
-    /**
-     * Gets certification level.
-     *
-     * @return certification level
-     */
-    public int getCertificationLevel() {
-	return certificationLevel;
-    }
+  /**
+   * Gets certification level.
+   *
+   * @return certification level
+   */
+  public int getCertificationLevel() {
+    return certificationLevel;
+  }
     
-    /**
-     * Gets signature field name.
-     *
-     * @return signature field name
-     */
-    public String getSignatureFieldName() {
-	return signatureFieldName;
-    }
+  /**
+   * Gets signature field name.
+   *
+   * @return signature field name
+   */
+  public String getSignatureFieldName() {
+    return signatureFieldName;
+  }
     
-    /**
-     * Gets signature append flag.
-     *
-     * @return signature append flag (true=append)
-     */
-    public boolean getSignatureAppend() {
-	return signatureAppend;
-    }
+  /**
+   * Gets signature append flag.
+   *
+   * @return signature append flag (true=append)
+   */
+  public boolean getSignatureAppend() {
+    return signatureAppend;
+  }
     
-    /**
-     * Gets signature reason.
-     *
-     * @return signature reason
-     */
-    public String getReason() {
-	return reason;
-    }
+  /**
+   * Gets signature reason.
+   *
+   * @return signature reason
+   */
+  public String getReason() {
+    return reason;
+  }
     
-    /**
-     * Gets signature location.
-     *
-     * @return signature location
-     */
-    public String getLocation() {
-	return location;
-    }
+  /**
+   * Gets signature location.
+   *
+   * @return signature location
+   */
+  public String getLocation() {
+    return location;
+  }
     
-    /**
-     * Gets signer's contact information.
-     *
-     * @return signer's contact information
-     */
-    public String getContact() {
-	return contact;
-    }
+  /**
+   * Gets signer's contact information.
+   *
+   * @return signer's contact information
+   */
+  public String getContact() {
+    return contact;
+  }
     
-    /**
-     * Gets file names.
-     *
-     * @return file names as string array
-     */
-    public String[] getFileNames() {
-	return fileNames;
-    }
+  /**
+   * Gets file names.
+   *
+   * @return file names as string array
+   */
+  public String[] getFileNames() {
+    return fileNames;
+  }
     
-    /**
-     * Gets alias.
-     *
-     * @return alias
-     */
-    public String getAlias() {
-	return alias;
-    }
+  /**
+   * Gets alias.
+   *
+   * @return alias
+   */
+  public String getAlias() {
+    return alias;
+  }
     
-    /**
-     * Gets number of file names.
-     *
-     * @return number of file names
-     */
-    public int numberFileNames() {
-	return fileNames.length;
-    }
+  /**
+   * Gets number of file names.
+   *
+   * @return number of file names
+   */
+  public int numberFileNames() {
+    return fileNames.length;
+  }
     
-    /**
-     * Gets file name.
-     *
-     * @param  n file name index
-     * @return file names as string array
-     */
-    public String getFileName(final int n) {
-	return fileNames[n];
-    }
+  /**
+   * Gets file name.
+   *
+   * @param  n file name index
+   * @return file names as string array
+   */
+  public String getFileName(final int n) {
+    return fileNames[n];
+  }
     
-    /**
-     * Default constructor.
-     *
-     * @param args command-line arguments
-     */
-    public Parameters(final String args[]) {
-	log.fine("Parameters started");
+  /**
+   * Default constructor.
+   *
+   * @param args command-line arguments
+   */
+  public Parameters(final String[] args) {
+    LOG.fine("Parameters started");
 
-	if ((args == null) || (args.length < 1)) {
-	    usage();
-	    log.fine("Error in parameters");
-	    System.exit(1);
-	}
-
-	final CommandLineParser parser = new DefaultParser();
-	CommandLine line = null;
-	try {
-	    line = parser.parse(options, args);
-	} catch (Exception exception) {
-	    usage();
-	    log.fine("Failed to parse the command line, exception: " + exception);
-	    System.exit(1);
-	}
-
-	if (line.hasOption("?")) {
-	    usage();
-	    log.fine("Application terminated normally");
-	    System.exit(0);
-	}
-	
-	if (line.hasOption("V")) {
-	    System.err.println("1.0.0");
-	    log.fine("Application terminated normally");
-	    System.exit(0);
-	}
-
-	if (!line.hasOption("k")) {
-	    System.err.println("Key file is required");
-	    log.fine("Error in paramters, missing key file");
-	    System.exit(1);
-	}
-	    
-	fileNames = line.getArgs();
-
-	if ((fileNames.length < 1) || (fileNames.length > 2)) {
-	    usage();
-	    log.fine("Error in parameters");
-	    System.exit(1);
-	}
-
-	keyFileName = line.getOptionValue("k");
-	signatureAppend = line.hasOption("a");
-
-	if (line.hasOption("p")) {
-	    password = line.getOptionValue("p").toCharArray();
-	}
-
-	if (line.hasOption("c")) {
-	    try {
-		certificationLevel = ((Number)line.getParsedOptionValue("c")).intValue();
-	    } catch (Exception exception) {
-		System.err.println("Error in certification level, exception: " + exception);
-		log.fine("Failed to parse certification level, exception: " + exception);
-		System.exit(1);
-	    }
-	    if ((certificationLevel < 0) || (certificationLevel > 3)) {
-		System.err.println("Certification level must be 0-3");
-		log.fine("Certification level out of range");
-		System.exit(1);
-	    }
-	}
-
-	if (line.hasOption("f")) {
-	    signatureFieldName = line.getOptionValue("f");
-	}
-
-	if (line.hasOption("r")) {
-	    reason = line.getOptionValue("r");
-	}
-
-	if (line.hasOption("l")) {
-	    location = line.getOptionValue("l");
-	}
-
-	if (line.hasOption("o")) {
-	    contact = line.getOptionValue("o");
-	}
-
-	if (line.hasOption("A")) {
-	    alias = line.getOptionValue("A");
-	}
-
-	log.fine("Parameters set up");
+    if ((args == null) || (args.length < 1)) {
+      usage();
+      LOG.fine("Error in parameters");
+      System.exit(1);
     }
+
+    final CommandLineParser parser = new DefaultParser();
+    CommandLine line = null;
+    try {
+      line = parser.parse(options, args);
+    } catch (Exception exception) {
+      usage();
+      LOG.fine("Failed to parse the command line, exception: " + exception);
+      System.exit(1);
+    }
+
+    if (line.hasOption("?")) {
+      usage();
+      LOG.fine("Application terminated normally");
+      System.exit(0);
+    }
+  
+    if (line.hasOption("V")) {
+      System.err.println("1.0.0");
+      LOG.fine("Application terminated normally");
+      System.exit(0);
+    }
+
+    if (!line.hasOption("k")) {
+      System.err.println("Key file is required");
+      LOG.fine("Error in paramters, missing key file");
+      System.exit(1);
+    }
+      
+    fileNames = line.getArgs();
+
+    if ((fileNames.length < 1) || (fileNames.length > 2)) {
+      usage();
+      LOG.fine("Error in parameters");
+      System.exit(1);
+    }
+
+    keyFileName = line.getOptionValue("k");
+    signatureAppend = line.hasOption("a");
+
+    if (line.hasOption("p")) {
+      password = line.getOptionValue("p").toCharArray();
+    }
+
+    if (line.hasOption("c")) {
+      try {
+        certificationLevel = ((Number)line.getParsedOptionValue("c")).intValue();
+      } catch (Exception exception) {
+        System.err.println("Error in certification level, exception: " + exception);
+        LOG.fine("Failed to parse certification level, exception: " + exception);
+        System.exit(1);
+      }
+      if ((certificationLevel < 0) || (certificationLevel > 3)) {
+        System.err.println("Certification level must be 0-3");
+        LOG.fine("Certification level out of range");
+        System.exit(1);
+      }
+    }
+
+    if (line.hasOption("f")) {
+      signatureFieldName = line.getOptionValue("f");
+    }
+
+    if (line.hasOption("r")) {
+      reason = line.getOptionValue("r");
+    }
+
+    if (line.hasOption("l")) {
+      location = line.getOptionValue("l");
+    }
+
+    if (line.hasOption("o")) {
+      contact = line.getOptionValue("o");
+    }
+
+    if (line.hasOption("A")) {
+      alias = line.getOptionValue("A");
+    }
+
+    LOG.fine("Parameters set up");
+  }
 }

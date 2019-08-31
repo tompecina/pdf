@@ -22,28 +22,27 @@
 
 package cz.pecina.pdf.stamppdf;
 
+import com.itextpdf.io.font.PdfEncodings;
 
-import java.util.logging.Logger;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.kernel.font.PdfFontFactory;
 
-import java.io.FileOutputStream;
-import java.io.FileInputStream;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfPage;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.StampingProperties;
+
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import com.itextpdf.kernel.pdf.PdfReader;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.StampingProperties;
-import com.itextpdf.kernel.pdf.PdfPage;
-
-import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
-
-import com.itextpdf.kernel.font.PdfFontFactory;
-import com.itextpdf.kernel.font.PdfFont;
-
-import com.itextpdf.io.font.PdfEncodings;
+import java.util.logging.Logger;
 
 
 /**
@@ -54,79 +53,80 @@ import com.itextpdf.io.font.PdfEncodings;
  */
 public class StampPdf {
 
-    // static logger
-    private static final Logger log = Logger.getLogger(StampPdf.class.getName());
+  // static logger
+  private static final Logger LOG = Logger.getLogger(StampPdf.class.getName());
 
-    // for description see Object
-    @Override
-    public String toString() {
-	return "StampPdf";
+  // for description see Object
+  @Override
+  public String toString() {
+    return "StampPdf";
+  }
+
+  /**
+   * Main method.
+   *
+   * @param args command-line arguments
+   */
+  public static void main(final String[] args) {
+    LOG.fine("Application started");
+
+    final Parameters parameters = new Parameters(args);
+
+    float xOffset = parameters.getXOffset();
+    float yOffset = parameters.getYOffset();
+    final String text = parameters.getText();
+    byte[] inputData = null;
+    String outFileName = null;
+
+    try {
+      inputData = Files.readAllBytes(Paths.get(parameters.getFileName(0)));
+      outFileName = parameters.getFileName(parameters.numberFileNames() - 1);
+    } catch (Exception exception) {
+      System.err.println("Error opening files, exception: " + exception);
+      LOG.fine("Error opening files, exception: " + exception);
+      System.exit(1);
     }
 
-    /**
-     * Main method.
-     *
-     * @param args command-line arguments
-     */
-    public static void main(final String args[]) {
-	log.fine("Application started");
-
-	final Parameters parameters = new Parameters(args);
-
-	float xOffset = parameters.getXOffset();
-	float yOffset = parameters.getYOffset();
-	final String text = parameters.getText();
-	byte[] inputData = null;
-	String outFileName = null;
-
-	try {
-	    inputData = Files.readAllBytes(Paths.get(parameters.getFileName(0)));
-	    outFileName = parameters.getFileName(parameters.numberFileNames() - 1);
-	} catch (Exception exception) {
-	    System.err.println("Error opening files, exception: " + exception);
-	    log.fine("Error opening files, exception: " + exception);
-	    System.exit(1);
-	}
-
-	try {
-	    final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
-	    final StampingProperties prop = new StampingProperties().preserveEncryption().useAppendMode();
-	    final PdfWriter writer = new PdfWriter(new FileOutputStream(outFileName));
-	    final PdfDocument pdfDocument = new PdfDocument(reader, writer, prop);
-	    final int pageNum = parameters.getPageNum();
-	    if (pageNum > pdfDocument.getNumberOfPages()) {
-		System.err.println("Illegal page number");
-		log.fine("Illegal page number");
-		System.exit(1);
-	    }
-	    final PdfPage pdfPage = pdfDocument.getPage(pageNum);
-	    final PdfCanvas canvas = new PdfCanvas(pdfPage.newContentStreamBefore(), pdfPage.getResources(), pdfDocument);
-	    canvas.beginText();
-	    final String resourcePath = "cz/pecina/pdf";
-	    final PdfFont baseFont = PdfFontFactory.createFont(resourcePath + "/fonts/LiberationSans-Regular.ttf", PdfEncodings.IDENTITY_H, true);
-	    canvas.setFontAndSize(baseFont, 9);
-	    canvas.setCharacterSpacing(0.1f);
-	    canvas.setLeading(11);
-	    if (xOffset < 0) {
-	    	xOffset = pdfPage.getPageSize().getWidth() + xOffset;
-	    }
-	    if (yOffset < 0) {
-	    	yOffset = pdfPage.getPageSize().getHeight() + yOffset;
-	    }
-	    canvas.setTextMatrix(xOffset, yOffset);
-	    for (String line: text.split("^")) {
-	    	canvas.showText(line);
-	    	canvas.newlineText();
-	    	canvas.endText();
-	    }
-	    pdfDocument.close();
-	    reader.close();
-    	} catch (Exception exception) {
-	    System.err.println("Error processing files, exception: " + exception);
-	    log.fine("Error processing files, exception: " + exception);
-	    System.exit(1);
-	}
-	
-	log.fine("Application terminated normally");
+    try {
+      final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
+      final StampingProperties prop = new StampingProperties().preserveEncryption().useAppendMode();
+      final PdfWriter writer = new PdfWriter(new FileOutputStream(outFileName));
+      final PdfDocument pdfDocument = new PdfDocument(reader, writer, prop);
+      final int pageNum = parameters.getPageNum();
+      if (pageNum > pdfDocument.getNumberOfPages()) {
+        System.err.println("Illegal page number");
+        LOG.fine("Illegal page number");
+        System.exit(1);
+      }
+      final PdfPage pdfPage = pdfDocument.getPage(pageNum);
+      final PdfCanvas canvas = new PdfCanvas(pdfPage.newContentStreamBefore(), pdfPage.getResources(), pdfDocument);
+      canvas.beginText();
+      final String resourcePath = "cz/pecina/pdf";
+      final PdfFont baseFont =
+          PdfFontFactory.createFont(resourcePath + "/fonts/LiberationSans-Regular.ttf", PdfEncodings.IDENTITY_H, true);
+      canvas.setFontAndSize(baseFont, 9);
+      canvas.setCharacterSpacing(0.1f);
+      canvas.setLeading(11);
+      if (xOffset < 0) {
+        xOffset = pdfPage.getPageSize().getWidth() + xOffset;
+      }
+      if (yOffset < 0) {
+        yOffset = pdfPage.getPageSize().getHeight() + yOffset;
+      }
+      canvas.setTextMatrix(xOffset, yOffset);
+      for (String line: text.split("^")) {
+        canvas.showText(line);
+        canvas.newlineText();
+        canvas.endText();
+      }
+      pdfDocument.close();
+      reader.close();
+    } catch (Exception exception) {
+      System.err.println("Error processing files, exception: " + exception);
+      LOG.fine("Error processing files, exception: " + exception);
+      System.exit(1);
     }
+  
+    LOG.fine("Application terminated normally");
+  }
 }
