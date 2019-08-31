@@ -23,30 +23,36 @@
 package cz.pecina.pdf.signpdf;
 
 import java.util.Calendar;
-import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.security.KeyStore;
 import java.security.Security;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import com.itextpdf.text.pdf.PdfReader;
-import com.itextpdf.text.pdf.PdfStamper;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Image;
-import com.itextpdf.text.pdf.PdfSignatureAppearance;
-import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfTemplate;
-import com.itextpdf.text.pdf.security.BouncyCastleDigest;
-import com.itextpdf.text.pdf.security.PrivateKeySignature;
-import com.itextpdf.text.pdf.security.DigestAlgorithms;
-import com.itextpdf.text.pdf.security.MakeSignature;
-import com.itextpdf.text.pdf.security.CertificateInfo;
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.StampingProperties;
+import com.itextpdf.kernel.pdf.xobject.PdfFormXObject;
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+import com.itextpdf.kernel.geom.Rectangle;
+import com.itextpdf.kernel.colors.ColorConstants;
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.font.PdfFont;
+import com.itextpdf.io.image.ImageData;
+import com.itextpdf.io.image.ImageDataFactory;
+import com.itextpdf.io.font.PdfEncodings;
+import com.itextpdf.layout.element.Image;
+import com.itextpdf.signatures.PdfSigner;
+import com.itextpdf.signatures.SignatureUtil;
+import com.itextpdf.signatures.PdfSignatureAppearance;
+import com.itextpdf.signatures.BouncyCastleDigest;
+import com.itextpdf.signatures.PrivateKeySignature;
+import com.itextpdf.signatures.DigestAlgorithms;
+import com.itextpdf.signatures.CertificateInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import java.util.logging.Logger;
 
@@ -75,9 +81,9 @@ public class SignPdf {
     public static void main(final String args[]) {
 	log.fine("Application started");
 
-	Parameters parameters = new Parameters(args);
+	final Parameters parameters = new Parameters(args);
 
-	String inFileName = parameters.getFileName(0);
+	final String inFileName = parameters.getFileName(0);
 	byte[] inputData = null;
 	String outFileName = null;
 	PrivateKey key = null;
@@ -97,7 +103,7 @@ public class SignPdf {
 	try {
 	    provider = new BouncyCastleProvider();
 	    Security.addProvider(provider);
-	    KeyStore keyStore = KeyStore.getInstance("pkcs12");
+	    final KeyStore keyStore = KeyStore.getInstance("pkcs12");
 	    keyStore.load(new FileInputStream(parameters.getKeyFileName()), parameters.getPassword());
 	    if (alias != null) {
 		if (!keyStore.containsAlias(alias)) {
@@ -117,86 +123,88 @@ public class SignPdf {
 	}
 
 	try {
-	    PdfReader reader = new PdfReader(inputData);
-	    if ((parameters.getSignatureFieldName() != null) && !reader.getAcroFields().getBlankSignatureNames().contains(parameters.getSignatureFieldName())) {
+	    final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
+	    final StampingProperties prop = new StampingProperties().preserveEncryption();
+	    if (parameters.getSignatureAppend()) {
+		prop.useAppendMode();
+	    }
+	    final PdfSigner signer = new PdfSigner(reader, new FileOutputStream(outFileName), prop);
+	    if ((parameters.getSignatureFieldName() != null) && !(new SignatureUtil(signer.getDocument())).getBlankSignatureNames().contains(parameters.getSignatureFieldName())) {
 		System.err.println("Field not found");
 		log.fine("Field not found");
 		System.exit(1);
 	    }
-	    final OutputStream fileOutputStream = new FileOutputStream(outFileName);
-	    PdfStamper stamper;
-	    if (parameters.getSignatureAppend()) {
-		stamper = PdfStamper.createSignature(reader, fileOutputStream, '\0', null, true);
-	    } else {
-		stamper = PdfStamper.createSignature(reader, fileOutputStream, '\0');
-	    }
-	    final PdfSignatureAppearance signatureAppearance = stamper.getSignatureAppearance();
+	    final PdfSignatureAppearance signatureAppearance = signer.getSignatureAppearance().setReuseAppearance(false);
 	    if (parameters.getReason() != null) {
-		signatureAppearance.setReason(parameters.getReason());
+	    	signatureAppearance.setReason(parameters.getReason());
 	    }
 	    if (parameters.getLocation() != null) {
-		signatureAppearance.setLocation(parameters.getLocation());
+	    	signatureAppearance.setLocation(parameters.getLocation());
 	    }
 	    if (parameters.getContact() != null) {
-		signatureAppearance.setContact(parameters.getContact());
+	    	signatureAppearance.setContact(parameters.getContact());
 	    }
-	    signatureAppearance.setCertificationLevel(parameters.getCertificationLevel());
-	    PrivateKeySignature signature = new PrivateKeySignature(key, DigestAlgorithms.SHA256, provider.getName());
-	    BouncyCastleDigest digest = new BouncyCastleDigest();
-	    signatureAppearance.setSignatureEvent(new SignatureEvent(parameters.getReason(), parameters.getLocation(), parameters.getContact()));
+	    signer.setCertificationLevel(parameters.getCertificationLevel());
+	    final PrivateKeySignature signature = new PrivateKeySignature(key, DigestAlgorithms.SHA256, provider.getName());
+	    final BouncyCastleDigest digest = new BouncyCastleDigest();
+	    signer.setSignatureEvent(new SignatureEvent(parameters.getReason(), parameters.getLocation(), parameters.getContact()));
 	    if (parameters.getSignatureFieldName() != null) {
-		signatureAppearance.setVisibleSignature(parameters.getSignatureFieldName());
-		final PdfTemplate n0 = signatureAppearance.getLayer(0);
-		float left = n0.getBoundingBox().getLeft();
-		float bottom = n0.getBoundingBox().getBottom();
-		float width = n0.getBoundingBox().getWidth();
-		float height = n0.getBoundingBox().getHeight();
-		n0.setColorFill(BaseColor.WHITE);
-		n0.rectangle(left, bottom, width, height);
-		n0.fill();
-		final PdfTemplate n2 = signatureAppearance.getLayer(2);
-		left = n2.getBoundingBox().getLeft();
-		bottom = n2.getBoundingBox().getBottom();
-		width = n2.getBoundingBox().getWidth();
-		height = n2.getBoundingBox().getHeight();
-		if (height < 35.99) {
-		    System.err.println("Signature field is too small");
-		    log.fine("Signature field is too small");
-		    System.exit(1);
-		}
-		String imageFileName = null;
-		if (parameters.getCertificationLevel() > 0) {
-		    imageFileName = "sealcer.png";
-		} else {
-		    imageFileName = "sealappr.png";
-		}
-		final Image image = Image.getInstance(SignPdf.class.getResource("graphics/" + imageFileName));
-		image.scaleToFit(10000f, 36f);
-		image.setAbsolutePosition(0f, (height - 36f));
-		n2.addImage(image);
-		final String resourcePath = "cz/pecina/pdf";
-		final BaseFont brm = BaseFont.createFont(resourcePath + "/fonts/Carlito-Regular.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-		final BaseFont bbf = BaseFont.createFont(resourcePath + "/fonts/Carlito-Bold.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-		n2.beginText();
-		n2.setTextMatrix((image.getScaledWidth() + 8f), (height - 7f));
-		n2.setLeading(8.5f);
-		n2.setFontAndSize(brm, 7f);
-		n2.showText("Digitálně podepsal: ");
-		n2.setFontAndSize(bbf, 7f);
-		n2.showText(CertificateInfo.getSubjectFields((X509Certificate)(certificateChain[0])).getField("CN"));
-		n2.setFontAndSize(brm, 7f);
-		n2.newlineText();
-		n2.showText("Certifikát: " + CertificateInfo.getSubjectFields((X509Certificate)(certificateChain[0])).getField("OU"));
-		n2.newlineText();
-		n2.showText("Vydal: " + CertificateInfo.getIssuerFields((X509Certificate)(certificateChain[0])).getField("CN"));
-		n2.newlineText();
-		final Calendar dt = signatureAppearance.getSignDate();
-		n2.showText(String.format("Datum a čas:  %02d.%02d.%d %02d:%02d:%02d", dt.get(dt.DAY_OF_MONTH), (dt.get(dt.MONTH) + 1), dt.get(dt.YEAR), dt.get(dt.HOUR_OF_DAY), dt.get(dt.MINUTE), dt.get(dt.SECOND)));
-		n2.endText();
+	    	signer.setFieldName(parameters.getSignatureFieldName());
+	    	final PdfFormXObject n0 = signatureAppearance.getLayer0();
+		Rectangle bbox = n0.getBBox().toRectangle();
+	    	float left = bbox.getLeft();
+	    	float bottom = bbox.getBottom();
+	    	float width = bbox.getWidth();
+	    	float height = bbox.getHeight();
+		final PdfCanvas canvas0 = new PdfCanvas(n0, signer.getDocument());
+		canvas0.setFillColor(ColorConstants.WHITE);
+	    	canvas0.rectangle(left, bottom, width, height);
+	    	canvas0.fill();
+	    	final PdfFormXObject n2 = signatureAppearance.getLayer2();
+		bbox = n2.getBBox().toRectangle();
+	    	left = bbox.getLeft();
+	    	bottom = bbox.getBottom();
+	    	width = bbox.getWidth();
+	    	height = bbox.getHeight();
+	    	if (height < 35.99) {
+	    	    System.err.println("Signature field is too small");
+	    	    log.fine("Signature field is too small");
+	    	    System.exit(1);
+	    	}
+	    	String imageFileName = null;
+	    	if (parameters.getCertificationLevel() > 0) {
+	    	    imageFileName = "sealcer.png";
+	    	} else {
+	    	    imageFileName = "sealappr.png";
+	    	}
+		final ImageData imageData = ImageDataFactory.create(SignPdf.class.getResource("graphics/" + imageFileName));
+		final Image image = new Image(imageData, 0f, (height - 36f));
+	    	image.scaleToFit(10000f, 36f);
+		final PdfCanvas canvas2 = new PdfCanvas(n2, signer.getDocument());
+		final Rectangle rect = new Rectangle(0f, (height - 36f), image.getImageScaledWidth(), image.getImageScaledHeight());
+		canvas2.addImage(imageData, rect, false);
+	    	final String resourcePath = "cz/pecina/pdf";
+	    	final PdfFont brm = PdfFontFactory.createFont(resourcePath + "/fonts/Carlito-Regular.ttf", PdfEncodings.IDENTITY_H, true);
+	    	final PdfFont bbf = PdfFontFactory.createFont(resourcePath + "/fonts/Carlito-Bold.ttf", PdfEncodings.IDENTITY_H, true);
+	    	canvas2.beginText();
+	    	canvas2.setTextMatrix((rect.getWidth() + 8f), (height - 7f));
+	    	canvas2.setLeading(8.5f);
+	    	canvas2.setFontAndSize(brm, 7f);
+	    	canvas2.showText("Digitálně podepsal: ");
+	    	canvas2.setFontAndSize(bbf, 7f);
+	    	canvas2.showText(CertificateInfo.getSubjectFields((X509Certificate)(certificateChain[0])).getField("CN"));
+	    	canvas2.setFontAndSize(brm, 7f);
+	    	canvas2.newlineText();
+	    	canvas2.showText("Certifikát: " + CertificateInfo.getSubjectFields((X509Certificate)(certificateChain[0])).getField("OU"));
+	    	canvas2.newlineText();
+	    	canvas2.showText("Vydal: " + CertificateInfo.getIssuerFields((X509Certificate)(certificateChain[0])).getField("CN"));
+	    	canvas2.newlineText();
+	    	final Calendar dt = signer.getSignDate();
+	    	canvas2.showText(String.format("Datum a čas:  %02d.%02d.%d %02d:%02d:%02d", dt.get(dt.DAY_OF_MONTH), (dt.get(dt.MONTH) + 1), dt.get(dt.YEAR), dt.get(dt.HOUR_OF_DAY), dt.get(dt.MINUTE), dt.get(dt.SECOND)));
+	    	canvas2.endText();
 	    }
-	    MakeSignature.signDetached(signatureAppearance, digest, signature, certificateChain, null, null, null, 4096, MakeSignature.CryptoStandard.CMS);
-	    stamper.close();
-	    fileOutputStream.close();
+	    signer.signDetached(digest, signature, certificateChain, null, null, null, 4096, PdfSigner.CryptoStandard.CMS);
+	    reader.close();
     	} catch (Exception exception) {
 	    System.err.println("Error processing files, exception: " + exception);
 	    log.fine("Error processing files, exception: " + exception);

@@ -22,9 +22,10 @@
 
 package cz.pecina.pdf.signpdf;
 
-import com.itextpdf.text.pdf.PdfDictionary;
-import com.itextpdf.text.pdf.PdfSignatureAppearance;
-import com.itextpdf.text.pdf.PdfName;
+import com.itextpdf.kernel.pdf.PdfDictionary;
+import com.itextpdf.kernel.pdf.PdfName;
+import com.itextpdf.signatures.PdfSigner;
+import com.itextpdf.signatures.PdfSignature;
 
 /**
  * Event removing unneeded fields.
@@ -32,7 +33,7 @@ import com.itextpdf.text.pdf.PdfName;
  * @author Tomáš Pecina
  * @version 1.0.0
  */
-public class SignatureEvent implements PdfSignatureAppearance.SignatureEvent {
+public class SignatureEvent implements PdfSigner.ISignatureEvent {
 
     // for description see Object
     @Override
@@ -59,15 +60,16 @@ public class SignatureEvent implements PdfSignatureAppearance.SignatureEvent {
     }
 
     // for description see PdfSignatureAppearance.SignatureEvent
-    public void getSignatureDictionary(PdfDictionary sig) {
+    public void getSignatureDictionary(final PdfSignature sig) {
+	final PdfDictionary dict = (PdfDictionary)(sig.getPdfObject());
 	if (reason == null) {
-	    sig.remove(PdfName.REASON);
+	    dict.remove(PdfName.Reason);
 	}
 	if (location == null) {
-	    sig.remove(PdfName.LOCATION);
+	    dict.remove(PdfName.Location);
 	}
 	if (contact == null) {
-	    sig.remove(PdfName.CONTACTINFO);
+	    dict.remove(PdfName.ContactInfo);
 	}
     }
 }

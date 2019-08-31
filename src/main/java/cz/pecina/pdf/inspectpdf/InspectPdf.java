@@ -118,12 +118,12 @@ public class InspectPdf {
     }
 
     // charset guess parameters
-    private final static int IMP = 0;  // impossible
-    private final static int REG = 1;  // regular
-    private final static int LLK = 2;  // less likely
-    private final static int UNL = 10;  // unlikely
-    private final static float UNL_LIM = 0.2f;
-    private final static char[] PDF_DOC_ENCODING_BYTE_LIKELYHOOD = {
+    private static final int IMP = 0;  // impossible
+    private static final int REG = 1;  // regular
+    private static final int LLK = 2;  // less likely
+    private static final int UNL = 10;  // unlikely
+    private static final float UNL_LIM = 0.2f;
+    private static final char[] PDF_DOC_ENCODING_BYTE_LIKELYHOOD = {
 	IMP, IMP, IMP, IMP,  IMP, IMP, IMP, IMP,  IMP, IMP, IMP, IMP,  IMP, IMP, IMP, IMP,  // 00
 	IMP, IMP, IMP, IMP,  IMP, IMP, IMP, IMP,  UNL, UNL, UNL, UNL,  UNL, UNL, UNL, UNL,  // 10
 	REG, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, REG, REG,  REG, REG, REG, REG,  // 20

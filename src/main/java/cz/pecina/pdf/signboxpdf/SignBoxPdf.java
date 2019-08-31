@@ -22,7 +22,6 @@
 
 package cz.pecina.pdf.signboxpdf;
 
-import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.ByteArrayInputStream;
 import java.nio.file.Files;
