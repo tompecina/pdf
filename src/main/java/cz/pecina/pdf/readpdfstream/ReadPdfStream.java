@@ -22,18 +22,22 @@
 
 package cz.pecina.pdf.readpdfstream;
 
+
+import java.util.logging.Logger;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfStream;
 import com.itextpdf.kernel.pdf.PdfName;
 import com.itextpdf.kernel.pdf.PdfDictionary;
-import java.util.logging.Logger;
+
 
 /**
  * Reads stream from PDF file.
@@ -130,10 +134,7 @@ public class ReadPdfStream {
 	    System.exit(0);
 	}
 
-	String streamType = "Data";
-	if (line.hasOption("t")) {
-	    streamType = line.getOptionValue("t");
-	}
+	final String streamType = (line.hasOption("t") ? line.getOptionValue("t") : "Data");
 
 	final boolean verbose = (line.hasOption("v"));
 
@@ -145,7 +146,7 @@ public class ReadPdfStream {
 	    System.exit(1);
 	}
 
-	String inFileName = fileNames[0];
+	final String inFileName = fileNames[0];
 
 	try {
 	    final PdfReader reader = new PdfReader(inFileName);

@@ -22,29 +22,43 @@
 
 package cz.pecina.pdf.rmwmark;
 
+
 import java.util.Set;
 import java.util.EnumSet;
+
 import java.util.logging.Logger;
+
 import java.io.FileOutputStream;
 import java.io.ByteArrayInputStream;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import com.itextpdf.kernel.geom.Matrix;
+
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfWriter;
+
+import com.itextpdf.kernel.geom.Matrix;
+
 import com.itextpdf.kernel.pdf.canvas.parser.PdfDocumentContentParser;
-import com.itextpdf.kernel.pdf.canvas.parser.data.ImageRenderInfo;
-import com.itextpdf.kernel.pdf.canvas.parser.listener.IEventListener;
 import com.itextpdf.kernel.pdf.canvas.parser.EventType;
+
+import com.itextpdf.kernel.pdf.canvas.parser.data.ImageRenderInfo;
 import com.itextpdf.kernel.pdf.canvas.parser.data.IEventData;
 import com.itextpdf.kernel.pdf.canvas.parser.data.ImageRenderInfo;
+
+import com.itextpdf.kernel.pdf.canvas.parser.listener.IEventListener;
+
 import com.itextpdf.kernel.pdf.xobject.PdfImageXObject;
+
 import com.itextpdf.layout.Document;
+
 import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.element.AreaBreak;
+
 import com.itextpdf.layout.property.AreaBreakType;
+
 
 /**
  * Remove watermark from PDF file.

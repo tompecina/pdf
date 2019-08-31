@@ -22,17 +22,29 @@
 
 package cz.pecina.pdf.stamppdf;
 
-import java.io.OutputStream;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import com.itextpdf.text.pdf.PdfReader;
-import com.itextpdf.text.pdf.PdfStamper;
-import com.itextpdf.text.pdf.BaseFont;
-import com.itextpdf.text.pdf.PdfContentByte;
+
 import java.util.logging.Logger;
+
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.ByteArrayInputStream;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import com.itextpdf.kernel.pdf.PdfReader;
+import com.itextpdf.kernel.pdf.PdfWriter;
+import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.StampingProperties;
+import com.itextpdf.kernel.pdf.PdfPage;
+
+import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+
+import com.itextpdf.kernel.font.PdfFontFactory;
+import com.itextpdf.kernel.font.PdfFont;
+
+import com.itextpdf.io.font.PdfEncodings;
+
 
 /**
  * Stamp PDF file.
@@ -59,11 +71,11 @@ public class StampPdf {
     public static void main(final String args[]) {
 	log.fine("Application started");
 
-	Parameters parameters = new Parameters(args);
+	final Parameters parameters = new Parameters(args);
 
 	float xOffset = parameters.getXOffset();
 	float yOffset = parameters.getYOffset();
-	String text = parameters.getText();
+	final String text = parameters.getText();
 	byte[] inputData = null;
 	String outFileName = null;
 
@@ -77,31 +89,38 @@ public class StampPdf {
 	}
 
 	try {
-	    final PdfReader reader = new PdfReader(inputData);
-	    final OutputStream fileOutputStream = new FileOutputStream(outFileName);
-	    final PdfStamper stamper = new PdfStamper(reader, fileOutputStream, '\0', true);
-	    final PdfContentByte over = stamper.getOverContent(1);
-	    over.beginText();
+	    final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
+	    final StampingProperties prop = new StampingProperties().preserveEncryption().useAppendMode();
+	    final PdfWriter writer = new PdfWriter(new FileOutputStream(outFileName));
+	    final PdfDocument pdfDocument = new PdfDocument(reader, writer, prop);
+	    final int pageNum = parameters.getPageNum();
+	    if (pageNum > pdfDocument.getNumberOfPages()) {
+		System.err.println("Illegal page number");
+		log.fine("Illegal page number");
+		System.exit(1);
+	    }
+	    final PdfPage pdfPage = pdfDocument.getPage(pageNum);
+	    final PdfCanvas canvas = new PdfCanvas(pdfPage.newContentStreamBefore(), pdfPage.getResources(), pdfDocument);
+	    canvas.beginText();
 	    final String resourcePath = "cz/pecina/pdf";
-	    final BaseFont baseFont = BaseFont.createFont(resourcePath + "/fonts/LiberationSans-Regular.ttf", BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
-	    over.setFontAndSize(baseFont, 9);
-	    over.setCharacterSpacing(0.1f);
-	    over.setLeading(11);
+	    final PdfFont baseFont = PdfFontFactory.createFont(resourcePath + "/fonts/LiberationSans-Regular.ttf", PdfEncodings.IDENTITY_H, true);
+	    canvas.setFontAndSize(baseFont, 9);
+	    canvas.setCharacterSpacing(0.1f);
+	    canvas.setLeading(11);
 	    if (xOffset < 0) {
-	    	xOffset = reader.getPageSize(1).getWidth() + xOffset;
+	    	xOffset = pdfPage.getPageSize().getWidth() + xOffset;
 	    }
 	    if (yOffset < 0) {
-	    	yOffset = reader.getPageSize(1).getHeight() + yOffset;
+	    	yOffset = pdfPage.getPageSize().getHeight() + yOffset;
 	    }
-	    over.setTextMatrix(xOffset, yOffset);
+	    canvas.setTextMatrix(xOffset, yOffset);
 	    for (String line: text.split("^")) {
-		over.showText(line);
-		over.newlineText();
-		over.endText();
+	    	canvas.showText(line);
+	    	canvas.newlineText();
+	    	canvas.endText();
 	    }
-	    stamper.close();
+	    pdfDocument.close();
 	    reader.close();
-	    fileOutputStream.close();
     	} catch (Exception exception) {
 	    System.err.println("Error processing files, exception: " + exception);
 	    log.fine("Error processing files, exception: " + exception);

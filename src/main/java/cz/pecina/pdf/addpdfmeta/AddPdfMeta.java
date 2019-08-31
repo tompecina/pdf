@@ -22,20 +22,26 @@
 
 package cz.pecina.pdf.addpdfmeta;
 
+
+import java.util.logging.Logger;
+
+import java.io.File;
+import java.io.ByteArrayInputStream;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import java.io.File;
-import java.io.ByteArrayInputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.PdfDocument;
-import java.util.logging.Logger;
+
 
 /**
  * Adds metadata to existing PDF file.

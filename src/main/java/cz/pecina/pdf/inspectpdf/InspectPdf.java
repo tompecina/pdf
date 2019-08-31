@@ -22,16 +22,22 @@
 
 package cz.pecina.pdf.inspectpdf;
 
+
+import java.util.List;
+import java.util.Set;
+
+import java.util.logging.Logger;
+
+import java.security.Security;
+import java.security.cert.X509Certificate;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import java.util.List;
-import java.util.Set;
-import java.security.Security;
-import java.security.cert.X509Certificate;
+
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfIndirectReference;
@@ -46,21 +52,31 @@ import com.itextpdf.kernel.pdf.PdfBoolean;
 import com.itextpdf.kernel.pdf.PdfNull;
 import com.itextpdf.kernel.pdf.PdfName;
 import com.itextpdf.kernel.pdf.PdfString;
+
 import com.itextpdf.kernel.pdf.annot.PdfWidgetAnnotation;
+
 import com.itextpdf.kernel.geom.Rectangle;
+
 import com.itextpdf.io.IOException;
+
 import com.itextpdf.io.font.PdfEncodings;
+
 import com.itextpdf.forms.PdfAcroForm;
+
 import com.itextpdf.forms.fields.PdfFormField;
+
 import com.itextpdf.signatures.SignatureUtil;
 import com.itextpdf.signatures.CertificateInfo;
 import com.itextpdf.signatures.PdfPKCS7;
 import com.itextpdf.signatures.SignaturePermissions;
 import com.itextpdf.signatures.CertificateUtil;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
 import org.bouncycastle.tsp.TimeStampToken;
+
 import org.bouncycastle.cert.X509CertificateHolder;
-import java.util.logging.Logger;
+
 
 /**
  * Inspect PDF file.
@@ -204,7 +220,7 @@ public class InspectPdf {
 	    } else {
 		int score = 0;
 		for (byte ch: bytes) {
-		    int inc = PDF_DOC_ENCODING_BYTE_LIKELYHOOD[ch & 0xff];
+		    final int inc = PDF_DOC_ENCODING_BYTE_LIKELYHOOD[ch & 0xff];
 		    if (inc == IMP) {
 			score = 0;
 			break;
@@ -404,12 +420,7 @@ public class InspectPdf {
 		    final PdfString contact = signatureDictionary.getAsString(PdfName.ContactInfo);
 		    System.out.println("  Contact info: " + contact);
 		    permissions = new SignaturePermissions(signatureDictionary, permissions);
-		    String signatureType;
-		    if (permissions.isCertification()) {
-			signatureType = "certification";
-		    } else {
-			signatureType = "approval";
-		    }
+		    final String signatureType = (permissions.isCertification() ? "certification" : "approval");
 		    System.out.println("  Signature type: " + signatureType);
 		    System.out.println("  Filling out fields allowed: " + yn(permissions.isFillInAllowed()));
 		    System.out.println("  Adding annotations allowed: " + yn(permissions.isAnnotationsAllowed()));

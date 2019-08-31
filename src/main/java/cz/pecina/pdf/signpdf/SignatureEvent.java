@@ -22,10 +22,13 @@
 
 package cz.pecina.pdf.signpdf;
 
+
 import com.itextpdf.kernel.pdf.PdfDictionary;
 import com.itextpdf.kernel.pdf.PdfName;
+
 import com.itextpdf.signatures.PdfSigner;
 import com.itextpdf.signatures.PdfSignature;
+
 
 /**
  * Event removing unneeded fields.

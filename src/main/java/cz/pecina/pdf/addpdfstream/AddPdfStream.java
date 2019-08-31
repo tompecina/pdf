@@ -22,18 +22,25 @@
 
 package cz.pecina.pdf.addpdfstream;
 
+
+import java.util.Map;
+import java.util.HashMap;
+
+import java.util.logging.Logger;
+
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import java.util.Map;
-import java.util.HashMap;
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.PdfDocument;
@@ -42,7 +49,7 @@ import com.itextpdf.kernel.pdf.CompressionConstants;
 import com.itextpdf.kernel.pdf.PdfName;
 import com.itextpdf.kernel.pdf.PdfCatalog;
 import com.itextpdf.kernel.pdf.PdfDictionary;
-import java.util.logging.Logger;
+
 
 /**
  * Adds stream to existing PDF file.
@@ -156,10 +163,7 @@ public class AddPdfStream {
 	    System.exit(0);
 	}
 
-	String streamType = "Data";
-	if (line.hasOption("t")) {
-	    streamType = line.getOptionValue("t");
-	}
+	final String streamType = (line.hasOption("t") ? line.getOptionValue("t") : "Data");
 
 	final Map<String,String> pairs = new HashMap<>();
 	if (line.hasOption("d")) {

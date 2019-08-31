@@ -22,14 +22,28 @@
 
 package cz.pecina.pdf.pdftoxml;
 
+
+import java.util.List;
+import java.util.ArrayList;
+
+import java.util.logging.Logger;
+
 import java.io.File;
+import java.io.PrintStream;
+import java.io.InputStream;
+import java.io.IOException;
+
+import javax.xml.XMLConstants;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
+
 import org.apache.pdfbox.cos.COSDocument;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.cos.COSBase;
@@ -42,20 +56,17 @@ import org.apache.pdfbox.cos.COSInteger;
 import org.apache.pdfbox.cos.COSNull;
 import org.apache.pdfbox.cos.COSBoolean;
 import org.apache.pdfbox.cos.COSStream;
-import java.util.ArrayList;
-import java.io.PrintStream;
-import java.io.InputStream;
-import java.io.IOException;
-import javax.xml.XMLConstants;
+
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
 import org.jdom2.Content;
 import org.jdom2.Text;
 import org.jdom2.JDOMException;
+
 import org.jdom2.output.XMLOutputter;
 import org.jdom2.output.Format;
-import java.util.logging.Logger;
+
 
 /**
  * Convert PDF file to XML.
@@ -204,7 +215,7 @@ public class PdfToXml {
     }
 
     private static Element createDataElement(final InputStream inputStream, final String elementName) throws IOException {
-	final ArrayList<Byte> buffer = new ArrayList<>();
+	final List<Byte> buffer = new ArrayList<>();
 	while (true) {
 	    final int b = inputStream.read();
 	    if (b == -1) {
@@ -249,7 +260,7 @@ public class PdfToXml {
 	    return streamElement;
 	}
 	if (object instanceof COSDictionary) {
-	    Element dictionaryElement = new Element("dictionary", NAMESPACE);
+	    final Element dictionaryElement = new Element("dictionary", NAMESPACE);
 	    for (COSName key: ((COSDictionary)object).keySet()) {
 	    	final Element entryElement = new Element("entry", NAMESPACE);
 	    	final Element keyElement = new Element("key", NAMESPACE);

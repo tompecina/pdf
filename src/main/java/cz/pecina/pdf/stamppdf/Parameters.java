@@ -22,14 +22,18 @@
 
 package cz.pecina.pdf.stamppdf;
 
+
+import java.util.Arrays;
+
+import java.util.logging.Logger;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
-import java.util.logging.Logger;
-import java.util.Arrays;
+
 
 /**
  * Parse command line and extract parameters.
@@ -57,6 +61,15 @@ public class Parameters {
     	         .desc("show version")
     	         .build()
     	    );
+    	options.addOption(
+    	    Option.builder("p")
+    	         .longOpt("page-number")
+    	         .hasArg()
+    	         .type(Number.class)
+    	         .argName("PAGE")
+    	         .desc("page number")
+    	         .build()
+    	    );
     }
     
     // for description see Object
@@ -80,11 +93,21 @@ public class Parameters {
     }
 
     // parsed parameters
+    private int pageNum = 1;
     private float xOffset;
     private float yOffset;
     private String text;
     private String[] fileNames;
 
+    /**
+     * Gets the page number.
+     *
+     * @return page number
+     */
+    public int getPageNum() {
+	return pageNum;
+    }
+    
     /**
      * Gets the x offset.
      *

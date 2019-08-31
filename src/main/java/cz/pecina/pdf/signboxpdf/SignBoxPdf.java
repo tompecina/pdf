@@ -22,19 +22,29 @@
 
 package cz.pecina.pdf.signboxpdf;
 
+
+import java.util.logging.Logger;
+
 import java.io.FileOutputStream;
 import java.io.ByteArrayInputStream;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.PdfDocument;
+
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
+
 import com.itextpdf.kernel.pdf.extgstate.PdfExtGState;
-import com.itextpdf.forms.fields.PdfFormField;
+
 import com.itextpdf.kernel.geom.Rectangle;
+
 import com.itextpdf.kernel.colors.DeviceRgb;
-import java.util.logging.Logger;
+
+import com.itextpdf.forms.fields.PdfFormField;
+
 
 /**
  * Stamp PDF file.
@@ -61,14 +71,14 @@ public class SignBoxPdf {
     public static void main(final String args[]) {
 	log.fine("Application started");
 
-	Parameters parameters = new Parameters(args);
+	final Parameters parameters = new Parameters(args);
 
-	float xOffset = parameters.getXOffset();
-	float yOffset = parameters.getYOffset();
-	float width = parameters.getWidth();
-	float height = parameters.getHeight();
-	int page = parameters.getPage();
-	String signatureFieldName = parameters.getSignatureFieldName();
+	final float xOffset = parameters.getXOffset();
+	final float yOffset = parameters.getYOffset();
+	final float width = parameters.getWidth();
+	final float height = parameters.getHeight();
+	final int page = parameters.getPage();
+	final String signatureFieldName = parameters.getSignatureFieldName();
 	byte[] inputData = null;
 	String outFileName = null;
 
