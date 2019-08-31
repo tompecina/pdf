@@ -29,6 +29,8 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import java.security.Security;
+import java.security.GeneralSecurityException;
+
 import java.security.cert.X509Certificate;
 
 import org.apache.commons.cli.CommandLine;
@@ -37,6 +39,8 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
+
+import com.itextpdf.kernel.PdfException;
 
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfDocument;
@@ -376,8 +380,15 @@ public class InspectPdf {
 		    System.out.println(String.format("Signature '%s':", name));
 		    System.out.println("  Signature covers whole document: " + yn(util.signatureCoversWholeDocument(name)));
 		    System.out.println("  Document revision: " + util.getRevision(name) + " of " + util.getTotalRevisions());
-		    final PdfPKCS7 pkcs7 = util.verifySignature(name);
-		    System.out.println("  Integrity check: " + yn(pkcs7.verify()));
+		    PdfPKCS7 pkcs7 = util.readSignatureData(name);
+		    try {
+			pkcs7 = util.readSignatureData(name);
+			System.out.println("  Integrity check: " + yn(pkcs7.verifySignatureIntegrityAndAuthenticity()));
+		    } catch (PdfException | GeneralSecurityException exception) {
+			System.out.println("  Integrity check: " + yn(false));
+			System.out.println();
+			continue;
+		    }
 		    final PdfFormField field = acroForm.getField(name);
 		    if (field != null) {
 			final List<PdfWidgetAnnotation> widgets = field.getWidgets();
