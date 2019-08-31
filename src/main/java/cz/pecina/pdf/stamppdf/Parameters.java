@@ -43,33 +43,30 @@ import org.apache.commons.cli.Options;
 public class Parameters {
 
   // static logger
-  private static final Logger LOG = Logger.getLogger(Parameters.class.getName());
+  private static final Logger log = Logger.getLogger(Parameters.class.getName());
 
   // options
   private static final Options options = new Options();
 
   static {
     options.addOption(
-                      Option.builder("?")
-                      .longOpt("help")
-                      .desc("show usage information")
-                      .build()
-                      );
+        Option.builder("?")
+        .longOpt("help")
+        .desc("show usage information")
+        .build());
     options.addOption(
-                      Option.builder("V")
-                      .longOpt("version")
-                      .desc("show version")
-                      .build()
-                      );
+        Option.builder("V")
+        .longOpt("version")
+        .desc("show version")
+        .build());
     options.addOption(
-                      Option.builder("p")
-                      .longOpt("page")
-                      .hasArg()
-                      .type(Number.class)
-                      .argName("PAGE")
-                      .desc("page number (default: 1)")
-                      .build()
-                      );
+        Option.builder("p")
+        .longOpt("page")
+        .hasArg()
+        .type(Number.class)
+        .argName("PAGE")
+        .desc("page number (default: 1)")
+        .build());
   }
     
   // for description see Object
@@ -168,11 +165,11 @@ public class Parameters {
    * @param args command-line arguments
    */
   public Parameters(final String[] args) {
-    LOG.fine("Parameters started");
+    log.fine("Parameters started");
 
     if ((args == null) || (args.length < 1)) {
       usage();
-      LOG.fine("Error in parameters");
+      log.fine("Error in parameters");
       System.exit(1);
     }
 
@@ -182,19 +179,19 @@ public class Parameters {
       line = parser.parse(options, args, true);
     } catch (Exception exception) {
       usage();
-      LOG.fine("Failed to parse the command line, exception: " + exception);
+      log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
     }
 
     if (line.hasOption("?")) {
       usage();
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
   
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
 
@@ -202,7 +199,7 @@ public class Parameters {
 
     if ((remArgs.length < 4) || (remArgs.length > 5)) {
       usage();
-      LOG.fine("Error in parameters");
+      log.fine("Error in parameters");
       System.exit(1);
     }
 
@@ -211,6 +208,6 @@ public class Parameters {
     text = remArgs[2];
     fileNames = Arrays.copyOfRange(remArgs, 3, remArgs.length);
 
-    LOG.fine("Parameters set up");
+    log.fine("Parameters set up");
   }
 }

@@ -76,7 +76,7 @@ import org.jdom2.output.XMLOutputter;
 public class PdfToXml {
 
   // static logger
-  private static final Logger LOG = Logger.getLogger(PdfToXml.class.getName());
+  private static final Logger log = Logger.getLogger(PdfToXml.class.getName());
 
   // XML file version
   private static final String PDF_XML_FILE_VERSION = "1.0";
@@ -92,23 +92,20 @@ public class PdfToXml {
 
   static {
     options.addOption(
-                      Option.builder("?")
-                      .longOpt("help")
-                      .desc("show usage information")
-                      .build()
-                      );
+        Option.builder("?")
+        .longOpt("help")
+        .desc("show usage information")
+        .build());
     options.addOption(
-                      Option.builder("V")
-                      .longOpt("version")
-                      .desc("show version")
-                      .build()
-                      );
+        Option.builder("V")
+        .longOpt("version")
+        .desc("show version")
+        .build());
     options.addOption(
-                      Option.builder("d")
-                      .longOpt("decompress")
-                      .desc("decompress streams")
-                      .build()
-                      );
+        Option.builder("d")
+        .longOpt("decompress")
+        .desc("decompress streams")
+        .build());
   }
     
   // for description see Object
@@ -305,7 +302,7 @@ public class PdfToXml {
       return createDataElement(((COSString)object).getBytes(), "string");
     }
     System.err.println("Bad PDF object type");
-    LOG.fine("Bad PDF object type");
+    log.fine("Bad PDF object type");
     System.exit(1);
     return null;
   }
@@ -326,11 +323,11 @@ public class PdfToXml {
    * @param args command-line arguments
    */
   public static void main(final String[] args) {
-    LOG.fine("Application started");
+    log.fine("Application started");
 
     if ((args == null) || (args.length < 1)) {
       usage();
-      LOG.fine("Error in parameters");
+      log.fine("Error in parameters");
       System.exit(1);
     }
 
@@ -340,19 +337,19 @@ public class PdfToXml {
       line = parser.parse(options, args);
     } catch (Exception exception) {
       usage();
-      LOG.fine("Failed to parse the command line, exception: " + exception);
+      log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
     }
 
     if (line.hasOption("?")) {
       usage();
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
   
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
 
@@ -367,12 +364,12 @@ public class PdfToXml {
         outPrintStream = new PrintStream(fileNames[1]);
       } else {
         usage();
-        LOG.fine("Too few or too many filenames");
+        log.fine("Too few or too many filenames");
         System.exit(1);
       } 
     } catch (Exception exception) {
       System.err.println("Error opening files, exception: " + exception);
-      LOG.fine("Error opening files, exception: " + exception);
+      log.fine("Error opening files, exception: " + exception);
       System.exit(1);
     }
     final String inFileName = fileNames[0];
@@ -410,10 +407,10 @@ public class PdfToXml {
       new XMLOutputter(Format.getRawFormat()).output(new Document(pdfElement), outPrintStream);
     } catch (Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
-      LOG.fine("Error processing files, exception: " + exception);
+      log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
 
-    LOG.fine("Application terminated normally");
+    log.fine("Application terminated normally");
   }
 }

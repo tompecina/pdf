@@ -54,7 +54,7 @@ import java.util.logging.Logger;
 public class StampPdf {
 
   // static logger
-  private static final Logger LOG = Logger.getLogger(StampPdf.class.getName());
+  private static final Logger log = Logger.getLogger(StampPdf.class.getName());
 
   // for description see Object
   @Override
@@ -68,7 +68,7 @@ public class StampPdf {
    * @param args command-line arguments
    */
   public static void main(final String[] args) {
-    LOG.fine("Application started");
+    log.fine("Application started");
 
     final Parameters parameters = new Parameters(args);
 
@@ -83,7 +83,7 @@ public class StampPdf {
       outFileName = parameters.getFileName(parameters.numberFileNames() - 1);
     } catch (Exception exception) {
       System.err.println("Error opening files, exception: " + exception);
-      LOG.fine("Error opening files, exception: " + exception);
+      log.fine("Error opening files, exception: " + exception);
       System.exit(1);
     }
 
@@ -95,7 +95,7 @@ public class StampPdf {
       final int pageNum = parameters.getPageNum();
       if (pageNum > pdfDocument.getNumberOfPages()) {
         System.err.println("Illegal page number");
-        LOG.fine("Illegal page number");
+        log.fine("Illegal page number");
         System.exit(1);
       }
       final PdfPage pdfPage = pdfDocument.getPage(pageNum);
@@ -123,10 +123,10 @@ public class StampPdf {
       reader.close();
     } catch (Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
-      LOG.fine("Error processing files, exception: " + exception);
+      log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
   
-    LOG.fine("Application terminated normally");
+    log.fine("Application terminated normally");
   }
 }

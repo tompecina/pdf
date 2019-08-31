@@ -82,7 +82,7 @@ import org.bouncycastle.jce.provider.BouncyCastleProvider;
 public class SignPdf {
 
   // static logger
-  private static final Logger LOG = Logger.getLogger(SignPdf.class.getName());
+  private static final Logger log = Logger.getLogger(SignPdf.class.getName());
 
   // for description see Object
   @Override
@@ -96,7 +96,7 @@ public class SignPdf {
    * @param args command-line arguments
    */
   public static void main(final String[] args) {
-    LOG.fine("Application started");
+    log.fine("Application started");
 
     final Parameters parameters = new Parameters(args);
 
@@ -111,7 +111,7 @@ public class SignPdf {
       outFileName = parameters.getFileName(parameters.numberFileNames() - 1);
     } catch (Exception exception) {
       System.err.println("Error opening files, exception: " + exception);
-      LOG.fine("Error opening files, exception: " + exception);
+      log.fine("Error opening files, exception: " + exception);
       System.exit(1);
     }
 
@@ -125,7 +125,7 @@ public class SignPdf {
       if (alias != null) {
         if (!keyStore.containsAlias(alias)) {
           System.err.println("Alias not found");
-          LOG.fine("Alias not found");
+          log.fine("Alias not found");
           System.exit(1);
         }
       } else {
@@ -135,7 +135,7 @@ public class SignPdf {
       certificateChain = keyStore.getCertificateChain(alias);
     } catch (Exception exception) {
       System.err.println("Error setting up cryptography, exception: " + exception);
-      LOG.fine("Error setting up cryptography, exception: " + exception);
+      log.fine("Error setting up cryptography, exception: " + exception);
       System.exit(1);
     }
 
@@ -151,7 +151,7 @@ public class SignPdf {
           && !(new SignatureUtil(signer.getDocument())).getBlankSignatureNames()
           .contains(parameters.getSignatureFieldName())) {
         System.err.println("Field not found");
-        LOG.fine("Field not found");
+        log.fine("Field not found");
         System.exit(1);
       }
       final PdfSignatureAppearance signatureAppearance = signer.getSignatureAppearance().setReuseAppearance(false);
@@ -189,7 +189,7 @@ public class SignPdf {
         height = bbox.getHeight();
         if (height < 35.99) {
           System.err.println("Signature field is too small");
-          LOG.fine("Signature field is too small");
+          log.fine("Signature field is too small");
           System.exit(1);
         }
         String imageFileName = null;
@@ -239,10 +239,10 @@ public class SignPdf {
       reader.close();
     } catch (Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
-      LOG.fine("Error processing files, exception: " + exception);
+      log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
   
-    LOG.fine("Application terminated normally");
+    log.fine("Application terminated normally");
   }
 }

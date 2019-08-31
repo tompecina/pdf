@@ -90,36 +90,32 @@ import org.bouncycastle.tsp.TimeStampToken;
 public class InspectPdf {
 
   // static logger
-  private static final Logger LOG = Logger.getLogger(InspectPdf.class.getName());
+  private static final Logger log = Logger.getLogger(InspectPdf.class.getName());
 
   // options
   private static final Options options = new Options();
 
   static {
     options.addOption(
-                      Option.builder("?")
-                      .longOpt("help")
-                      .desc("show usage information")
-                      .build()
-                      );
+        Option.builder("?")
+        .longOpt("help")
+        .desc("show usage information")
+        .build());
     options.addOption(
-                      Option.builder("V")
-                      .longOpt("version")
-                      .desc("show version")
-                      .build()
-                      );
+        Option.builder("V")
+        .longOpt("version")
+        .desc("show version")
+        .build());
     options.addOption(
-                      Option.builder("m")
-                      .longOpt("metadata")
-                      .desc("print metadata")
-                      .build()
-                      );
+        Option.builder("m")
+        .longOpt("metadata")
+        .desc("print metadata")
+        .build());
     options.addOption(
-                      Option.builder("o")
-                      .longOpt("objects")
-                      .desc("list PDF objects")
-                      .build()
-                      );
+        Option.builder("o")
+        .longOpt("objects")
+        .desc("list PDF objects")
+        .build());
   }
     
   // for description see Object
@@ -292,11 +288,11 @@ public class InspectPdf {
    * @param args command-line arguments
    */
   public static void main(final String[] args) {
-    LOG.fine("Application started");
+    log.fine("Application started");
 
     if ((args == null) || (args.length < 1)) {
       usage();
-      LOG.fine("Error in parameters");
+      log.fine("Error in parameters");
       System.exit(1);
     }
 
@@ -306,19 +302,19 @@ public class InspectPdf {
       line = parser.parse(options, args);
     } catch (Exception exception) {
       usage();
-      LOG.fine("Failed to parse the command line, exception: " + exception);
+      log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
     }
 
     if (line.hasOption("?")) {
       usage();
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
   
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
 
@@ -331,7 +327,7 @@ public class InspectPdf {
       Security.addProvider(provider);
     } catch (Exception exception) {
       System.err.println("Error setting up cryptography, exception: " + exception);
-      LOG.fine("Error setting up cryptography, exception: " + exception);
+      log.fine("Error setting up cryptography, exception: " + exception);
       System.exit(1);
     }
 
@@ -466,10 +462,10 @@ public class InspectPdf {
 
     } catch (Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
-      LOG.fine("Error processing files, exception: " + exception);
+      log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
 
-    LOG.fine("Application terminated normally");
+    log.fine("Application terminated normally");
   }
 }

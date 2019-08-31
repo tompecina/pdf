@@ -68,7 +68,7 @@ import java.util.logging.Logger;
 public class RmWmark {
 
   // static logger
-  private static final Logger LOG = Logger.getLogger(RmWmark.class.getName());
+  private static final Logger log = Logger.getLogger(RmWmark.class.getName());
 
   // for description see Object
   @Override
@@ -125,7 +125,7 @@ public class RmWmark {
    * @param args command-line arguments
    */
   public static void main(final String[] args) {
-    LOG.fine("Application started");
+    log.fine("Application started");
 
     Parameters parameters = new Parameters(args);
 
@@ -137,7 +137,7 @@ public class RmWmark {
       outFileName = parameters.getFileName(parameters.numberFileNames() - 1);
     } catch (Exception exception) {
       System.err.println("Error opening files, exception: " + exception);
-      LOG.fine("Error opening files, exception: " + exception);
+      log.fine("Error opening files, exception: " + exception);
       System.exit(1);
     }
 
@@ -164,10 +164,10 @@ public class RmWmark {
       reader.close();
     } catch (Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
-      LOG.fine("Error processing files, exception: " + exception);
+      log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
   
-    LOG.fine("Application terminated normally");
+    log.fine("Application terminated normally");
   }
 }

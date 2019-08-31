@@ -59,55 +59,49 @@ import org.apache.commons.cli.Options;
 public class AddPdfStream {
 
   // static logger
-  private static final Logger LOG = Logger.getLogger(AddPdfStream.class.getName());
+  private static final Logger log = Logger.getLogger(AddPdfStream.class.getName());
 
   // options
   private static final Options options = new Options();
 
   static {
     options.addOption(
-                      Option.builder("?")
-                      .longOpt("help")
-                      .desc("show usage information")
-                      .build()
-                      );
+        Option.builder("?")
+        .longOpt("help")
+        .desc("show usage information")
+        .build());
     options.addOption(
-                      Option.builder("V")
-                      .longOpt("version")
-                      .desc("show version")
-                      .build()
-                      );
+        Option.builder("V")
+        .longOpt("version")
+        .desc("show version")
+        .build());
     options.addOption(
-                      Option.builder("t")
-                      .longOpt("type")
-                      .hasArg()
-                      .argName("TYPE")
-                      .desc("type of the stream in the catalog (default: Data)")
-                      .build()
-                      );
+        Option.builder("t")
+        .longOpt("type")
+        .hasArg()
+        .argName("TYPE")
+        .desc("type of the stream in the catalog (default: Data)")
+        .build());
     options.addOption(
-                      Option.builder("d")
-                      .longOpt("dictionary")
-                      .hasArg()
-                      .argName("DATA")
-                      .desc("data copied to the stream dictionary, entered as key-value pairs: KEY:VALUE,KEY:VALUE...")
-                      .build()
-                      );
+        Option.builder("d")
+        .longOpt("dictionary")
+        .hasArg()
+        .argName("DATA")
+        .desc("data copied to the stream dictionary, entered as key-value pairs: KEY:VALUE,KEY:VALUE...")
+        .build());
     options.addOption(
-                      Option.builder("c")
-                      .longOpt("compress")
-                      .desc("compress the stream")
-                      .build()
-                      );
+        Option.builder("c")
+        .longOpt("compress")
+        .desc("compress the stream")
+        .build());
     options.addOption(
-                      Option.builder("l")
-                      .longOpt("level")
-                      .hasArg()
-                      .type(Number.class)
-                      .argName("LEVEL")
-                      .desc("compression level (0-9)")
-                      .build()
-                      );
+        Option.builder("l")
+        .longOpt("level")
+        .hasArg()
+        .type(Number.class)
+        .argName("LEVEL")
+        .desc("compression level (0-9)")
+        .build());
   }
     
   // for description see Object
@@ -132,11 +126,11 @@ public class AddPdfStream {
    * @param args command-line arguments
    */
   public static void main(final String[] args) {
-    LOG.fine("Application started");
+    log.fine("Application started");
 
     if ((args == null) || (args.length < 1)) {
       usage();
-      LOG.fine("Error in parameters");
+      log.fine("Error in parameters");
       System.exit(1);
     }
 
@@ -146,19 +140,19 @@ public class AddPdfStream {
       line = parser.parse(options, args);
     } catch (Exception exception) {
       usage();
-      LOG.fine("Failed to parse the command line, exception: " + exception);
+      log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
     }
 
     if (line.hasOption("?")) {
       usage();
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
   
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
 
@@ -173,7 +167,7 @@ public class AddPdfStream {
         }
       } catch (Exception exception) {
         System.err.println("Error in dictionary pairs, exception: " + exception);
-        LOG.fine("FFailed to parse dictionary pairs, exception: " + exception);
+        log.fine("FFailed to parse dictionary pairs, exception: " + exception);
         System.exit(1);
       }
     }
@@ -185,12 +179,12 @@ public class AddPdfStream {
         compressionLevel = ((Number)line.getParsedOptionValue("l")).intValue();
       } catch (Exception exception) {
         System.err.println("Error in compression level, exception: " + exception);
-        LOG.fine("Failed to parse compression level, exception: " + exception);
+        log.fine("Failed to parse compression level, exception: " + exception);
         System.exit(1);
       }
       if ((compressionLevel < 0) || (compressionLevel > 9)) {
         System.err.println("Compression level must be 0-9");
-        LOG.fine("Compression level out of range");
+        log.fine("Compression level out of range");
         System.exit(1);
       }
     }
@@ -202,7 +196,7 @@ public class AddPdfStream {
   
     if ((fileNames.length < 2) || (fileNames.length > 3)) {
       usage();
-      LOG.fine("Error in parameters");
+      log.fine("Error in parameters");
       System.exit(1);
     }
 
@@ -214,7 +208,7 @@ public class AddPdfStream {
       outFileName = fileNames[(fileNames.length == 2) ? 0 : 2];
     } catch (Exception exception) {
       System.err.println("Error opening files, exception: " + exception);
-      LOG.fine("Error opening files, exception: " + exception);
+      log.fine("Error opening files, exception: " + exception);
       System.exit(1);
     }
 
@@ -240,10 +234,10 @@ public class AddPdfStream {
       reader.close();
     } catch (Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
-      LOG.fine("Error processing files, exception: " + exception);
+      log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
   
-    LOG.fine("Application terminated normally");
+    log.fine("Application terminated normally");
   }
 }

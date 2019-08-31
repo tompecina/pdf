@@ -41,95 +41,84 @@ import org.apache.commons.cli.Options;
 public class Parameters {
 
   // static logger
-  private static final Logger LOG = Logger.getLogger(Parameters.class.getName());
+  private static final Logger log = Logger.getLogger(Parameters.class.getName());
 
   // options
   private static final Options options = new Options();
 
   static {
     options.addOption(
-                      Option.builder("?")
-                      .longOpt("help")
-                      .desc("show usage information")
-                      .build()
-                      );
+        Option.builder("?")
+        .longOpt("help")
+        .desc("show usage information")
+        .build());
     options.addOption(
-                      Option.builder("V")
-                      .longOpt("version")
-                      .desc("show version")
-                      .build()
-                      );
+        Option.builder("V")
+        .longOpt("version")
+        .desc("show version")
+        .build());
     options.addOption(
-                      Option.builder("k")
-                      .longOpt("key")
-                      .hasArg()
-                      .argName("FILE")
-                      .desc("(required) key file")
-                      .build()
-                      );
+        Option.builder("k")
+        .longOpt("key")
+        .hasArg()
+        .argName("FILE")
+        .desc("(required) key file")
+        .build());
     options.addOption(
-                      Option.builder("p")
-                      .longOpt("pass")
-                      .hasArg()
-                      .argName("PASSWORD")
-                      .desc("password")
-                      .build()
-                      );
+        Option.builder("p")
+        .longOpt("pass")
+        .hasArg()
+        .argName("PASSWORD")
+        .desc("password")
+        .build());
     options.addOption(
-                      Option.builder("c")
-                      .longOpt("cert-level")
-                      .hasArg()
-                      .type(Number.class)
-                      .argName("LEVEL")
-                      .desc("certification level (O-3)")
-                      .build()
-                      );
+        Option.builder("c")
+        .longOpt("cert-level")
+        .hasArg()
+        .type(Number.class)
+        .argName("LEVEL")
+        .desc("certification level (O-3)")
+        .build());
     options.addOption(
-                      Option.builder("f")
-                      .longOpt("field")
-                      .hasArg()
-                      .argName("FIELD")
-                      .desc("signature field name (if none, invisible signature is created)")
-                      .build()
-                      );
+        Option.builder("f")
+        .longOpt("field")
+        .hasArg()
+        .argName("FIELD")
+        .desc("signature field name (if none, invisible signature is created)")
+        .build());
     options.addOption(
-                      Option.builder("a")
-                      .longOpt("append")
-                      .desc("append signature as an update")
-                      .build()
-                      );
+        Option.builder("a")
+        .longOpt("append")
+        .desc("append signature as an update")
+        .build());
     options.addOption(
-                      Option.builder("r")
-                      .longOpt("reason")
-                      .hasArg()
-                      .argName("REASON")
-                      .desc("reason")
-                      .build()
-                      );
+        Option.builder("r")
+        .longOpt("reason")
+        .hasArg()
+        .argName("REASON")
+        .desc("reason")
+        .build());
     options.addOption(
-                      Option.builder("l")
-                      .longOpt("location")
-                      .hasArg()
-                      .argName("LOCATION")
-                      .desc("location")
-                      .build()
-                      );
+        Option.builder("l")
+        .longOpt("location")
+        .hasArg()
+        .argName("LOCATION")
+        .desc("location")
+        .build());
     options.addOption(
-                      Option.builder("o")
-                      .longOpt("contact")
-                      .hasArg()
-                      .argName("CONTACT")
-                      .desc("contact information")
-                      .build()
-                      );
+        Option.builder("o")
+        .longOpt("contact")
+        .hasArg()
+        .argName("CONTACT")
+        .desc("contact information")
+        .build());
     options.addOption(
-                      Option.builder("A")
-                      .longOpt("alias")
-                      .hasArg()
-                      .argName("ALIAS")
-                      .desc("alias in keystore (in none, first alias is used)")
-                      .build()
-                      );
+        Option.builder("A")
+        .longOpt("alias")
+        .hasArg()
+        .argName("ALIAS")
+        .desc("alias in keystore (in none, first alias is used)")
+        .build());
   }
     
   // for description see Object
@@ -275,11 +264,11 @@ public class Parameters {
    * @param args command-line arguments
    */
   public Parameters(final String[] args) {
-    LOG.fine("Parameters started");
+    log.fine("Parameters started");
 
     if ((args == null) || (args.length < 1)) {
       usage();
-      LOG.fine("Error in parameters");
+      log.fine("Error in parameters");
       System.exit(1);
     }
 
@@ -289,25 +278,25 @@ public class Parameters {
       line = parser.parse(options, args);
     } catch (Exception exception) {
       usage();
-      LOG.fine("Failed to parse the command line, exception: " + exception);
+      log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
     }
 
     if (line.hasOption("?")) {
       usage();
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
   
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
 
     if (!line.hasOption("k")) {
       System.err.println("Key file is required");
-      LOG.fine("Error in paramters, missing key file");
+      log.fine("Error in paramters, missing key file");
       System.exit(1);
     }
       
@@ -315,7 +304,7 @@ public class Parameters {
 
     if ((fileNames.length < 1) || (fileNames.length > 2)) {
       usage();
-      LOG.fine("Error in parameters");
+      log.fine("Error in parameters");
       System.exit(1);
     }
 
@@ -331,12 +320,12 @@ public class Parameters {
         certificationLevel = ((Number)line.getParsedOptionValue("c")).intValue();
       } catch (Exception exception) {
         System.err.println("Error in certification level, exception: " + exception);
-        LOG.fine("Failed to parse certification level, exception: " + exception);
+        log.fine("Failed to parse certification level, exception: " + exception);
         System.exit(1);
       }
       if ((certificationLevel < 0) || (certificationLevel > 3)) {
         System.err.println("Certification level must be 0-3");
-        LOG.fine("Certification level out of range");
+        log.fine("Certification level out of range");
         System.exit(1);
       }
     }
@@ -361,6 +350,6 @@ public class Parameters {
       alias = line.getOptionValue("A");
     }
 
-    LOG.fine("Parameters set up");
+    log.fine("Parameters set up");
   }
 }

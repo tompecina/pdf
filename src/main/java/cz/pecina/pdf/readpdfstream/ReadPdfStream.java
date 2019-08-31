@@ -47,38 +47,34 @@ import org.apache.commons.cli.Options;
 public class ReadPdfStream {
 
   // static logger
-  private static final Logger LOG = Logger.getLogger(ReadPdfStream.class.getName());
+  private static final Logger log = Logger.getLogger(ReadPdfStream.class.getName());
 
   // options
   private static final Options options = new Options();
 
   static {
     options.addOption(
-                      Option.builder("?")
-                      .longOpt("help")
-                      .desc("show usage information")
-                      .build()
-                      );
+        Option.builder("?")
+        .longOpt("help")
+        .desc("show usage information")
+        .build());
     options.addOption(
-                      Option.builder("V")
-                      .longOpt("version")
-                      .desc("show version")
-                      .build()
-                      );
+        Option.builder("V")
+        .longOpt("version")
+        .desc("show version")
+        .build());
     options.addOption(
-                      Option.builder("t")
-                      .longOpt("type")
-                      .hasArg()
-                      .argName("TYPE")
-                      .desc("type of the stream in the catalog (default: Data)")
-                      .build()
-                      );
+        Option.builder("t")
+        .longOpt("type")
+        .hasArg()
+        .argName("TYPE")
+        .desc("type of the stream in the catalog (default: Data)")
+        .build());
     options.addOption(
-                      Option.builder("v")
-                      .longOpt("verbose")
-                      .desc("be more verbose")
-                      .build()
-                      );
+        Option.builder("v")
+        .longOpt("verbose")
+        .desc("be more verbose")
+        .build());
   }
     
   // for description see Object
@@ -103,11 +99,11 @@ public class ReadPdfStream {
    * @param args command-line arguments
    */
   public static void main(final String[] args) {
-    LOG.fine("Application started");
+    log.fine("Application started");
 
     if ((args == null) || (args.length < 1)) {
       usage();
-      LOG.fine("Error in parameters");
+      log.fine("Error in parameters");
       System.exit(1);
     }
 
@@ -117,19 +113,19 @@ public class ReadPdfStream {
       line = parser.parse(options, args);
     } catch (Exception exception) {
       usage();
-      LOG.fine("Failed to parse the command line, exception: " + exception);
+      log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
     }
 
     if (line.hasOption("?")) {
       usage();
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
   
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
 
@@ -141,7 +137,7 @@ public class ReadPdfStream {
   
     if (fileNames.length != 1) {
       usage();
-      LOG.fine("Error in parameters");
+      log.fine("Error in parameters");
       System.exit(1);
     }
 
@@ -154,7 +150,7 @@ public class ReadPdfStream {
       final PdfName streamPdfName = new PdfName(streamType);
       if (!catalog.containsKey(streamPdfName)) {
         System.err.println("Stream '" + streamType + "' not found");
-        LOG.fine("Stream not found");
+        log.fine("Stream not found");
         System.exit(1);
       }
       final PdfStream pdfStream = catalog.getAsStream(streamPdfName);
@@ -168,10 +164,10 @@ public class ReadPdfStream {
       System.out.print(new String(pdfStream.getBytes(), "utf-8"));
     } catch (Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
-      LOG.fine("Error processing files, exception: " + exception);
+      log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
   
-    LOG.fine("Application terminated normally");
+    log.fine("Application terminated normally");
   }
 }

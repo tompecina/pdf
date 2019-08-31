@@ -41,7 +41,7 @@ import org.apache.commons.cli.Options;
 public class PdfHelp {
 
   // static logger
-  private static final Logger LOG = Logger.getLogger(PdfHelp.class.getName());
+  private static final Logger log = Logger.getLogger(PdfHelp.class.getName());
 
   // for description see Object
   @Override
@@ -54,11 +54,10 @@ public class PdfHelp {
 
   static {
     OPTIONS.addOption(
-                      Option.builder("V")
-                      .longOpt("version")
-                      .desc("show version")
-                      .build()
-                      );
+        Option.builder("V")
+        .longOpt("version")
+        .desc("show version")
+        .build());
   }
 
   /**
@@ -86,7 +85,7 @@ public class PdfHelp {
    * @param args command-line arguments
    */
   public static void main(final String[] args) {
-    LOG.fine("Application started");
+    log.fine("Application started");
 
     final CommandLineParser parser = new DefaultParser();
     CommandLine line = null;
@@ -94,7 +93,7 @@ public class PdfHelp {
       line = parser.parse(OPTIONS, args);
     } catch (Exception exception) {
       usage();
-      LOG.fine("Failed to parse the command line, exception: " + exception);
+      log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
     }
 
@@ -104,6 +103,6 @@ public class PdfHelp {
       usage();
     }
 
-    LOG.fine("Application terminated normally");
+    log.fine("Application terminated normally");
   }
 }

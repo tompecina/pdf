@@ -38,7 +38,7 @@ import java.util.logging.Logger;
 public class ModifiedPdfDocument extends PdfDocument {
 
   // static logger
-  private static final Logger LOG = Logger.getLogger(ModifiedPdfDocument.class.getName());
+  private static final Logger log = Logger.getLogger(ModifiedPdfDocument.class.getName());
 
   /**
    * Starts the process of adding extra content to an existing PDF

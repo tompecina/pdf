@@ -54,7 +54,7 @@ import java.util.logging.Logger;
 public class SignBoxPdf {
 
   // static logger
-  private static final Logger LOG = Logger.getLogger(SignBoxPdf.class.getName());
+  private static final Logger log = Logger.getLogger(SignBoxPdf.class.getName());
 
   // for description see Object
   @Override
@@ -68,7 +68,7 @@ public class SignBoxPdf {
    * @param args command-line arguments
    */
   public static void main(final String[] args) {
-    LOG.fine("Application started");
+    log.fine("Application started");
 
     final Parameters parameters = new Parameters(args);
 
@@ -86,7 +86,7 @@ public class SignBoxPdf {
       outFileName = parameters.getFileName(parameters.numberFileNames() - 1);
     } catch (Exception exception) {
       System.err.println("Error opening files, exception: " + exception);
-      LOG.fine("Error opening files, exception: " + exception);
+      log.fine("Error opening files, exception: " + exception);
       System.exit(1);
     }
 
@@ -111,10 +111,10 @@ public class SignBoxPdf {
       reader.close();
     } catch (Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
-      LOG.fine("Error processing files, exception: " + exception);
+      log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
   
-    LOG.fine("Application terminated normally");
+    log.fine("Application terminated normally");
   }
 }

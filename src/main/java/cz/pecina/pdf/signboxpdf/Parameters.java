@@ -42,59 +42,53 @@ import org.apache.commons.cli.Options;
 public class Parameters {
 
   // static logger
-  private static final Logger LOG = Logger.getLogger(Parameters.class.getName());
+  private static final Logger log = Logger.getLogger(Parameters.class.getName());
 
   // options
   private static final Options options = new Options();
 
   static {
     options.addOption(
-                      Option.builder("?")
-                      .longOpt("help")
-                      .desc("show usage information")
-                      .build()
-                      );
+        Option.builder("?")
+        .longOpt("help")
+        .desc("show usage information")
+        .build());
     options.addOption(
-                      Option.builder("V")
-                      .longOpt("version")
-                      .desc("show version")
-                      .build()
-                      );
+        Option.builder("V")
+        .longOpt("version")
+        .desc("show version")
+        .build());
     options.addOption(
-                      Option.builder("p")
-                      .longOpt("page")
-                      .hasArg()
-                      .type(Number.class)
-                      .argName("PAGE")
-                      .desc("page number (default: 1)")
-                      .build()
-                      );
+        Option.builder("p")
+        .longOpt("page")
+        .hasArg()
+        .type(Number.class)
+        .argName("PAGE")
+        .desc("page number (default: 1)")
+        .build());
     options.addOption(
-                      Option.builder("f")
-                      .longOpt("field")
-                      .hasArg()
-                      .argName("FIELD")
-                      .desc("signature field name (default: Signature)")
-                      .build()
-                      );
+        Option.builder("f")
+        .longOpt("field")
+        .hasArg()
+        .argName("FIELD")
+        .desc("signature field name (default: Signature)")
+        .build());
     options.addOption(
-                      Option.builder("w")
-                      .longOpt("width")
-                      .hasArg()
-                      .type(Float.class)
-                      .argName("WIDTH")
-                      .desc("signature field width (default: 180)")
-                      .build()
-                      );
+        Option.builder("w")
+        .longOpt("width")
+        .hasArg()
+        .type(Float.class)
+        .argName("WIDTH")
+        .desc("signature field width (default: 180)")
+        .build());
     options.addOption(
-                      Option.builder("h")
-                      .longOpt("height")
-                      .hasArg()
-                      .type(Float.class)
-                      .argName("HEIGHT")
-                      .desc("signature field height (default: 36)")
-                      .build()
-                      );
+        Option.builder("h")
+        .longOpt("height")
+        .hasArg()
+        .type(Float.class)
+        .argName("HEIGHT")
+        .desc("signature field height (default: 36)")
+        .build());
   }
     
   // for description see Object
@@ -202,11 +196,11 @@ public class Parameters {
    * @param args command-line arguments
    */
   public Parameters(final String[] args) {
-    LOG.fine("Parameters started");
+    log.fine("Parameters started");
 
     if ((args == null) || (args.length < 1)) {
       usage();
-      LOG.fine("Error in parameters");
+      log.fine("Error in parameters");
       System.exit(1);
     }
 
@@ -216,19 +210,19 @@ public class Parameters {
       line = parser.parse(options, args, true);
     } catch (Exception exception) {
       usage();
-      LOG.fine("Failed to parse the command line, exception: " + exception);
+      log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
     }
 
     if (line.hasOption("?")) {
       usage();
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
   
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
-      LOG.fine("Application terminated normally");
+      log.fine("Application terminated normally");
       System.exit(0);
     }
 
@@ -241,12 +235,12 @@ public class Parameters {
         page = ((Number)line.getParsedOptionValue("p")).intValue();
       } catch (Exception exception) {
         System.err.println("Error in page number, exception: " + exception);
-        LOG.fine("Failed to parse page number, exception: " + exception);
+        log.fine("Failed to parse page number, exception: " + exception);
         System.exit(1);
       }
       if (page <= 0) {
         System.err.println("Page number must be positive");
-        LOG.fine("Page number out of range");
+        log.fine("Page number out of range");
         System.exit(1);
       }
     }
@@ -256,12 +250,12 @@ public class Parameters {
         width = ((Float)line.getParsedOptionValue("w")).floatValue();
       } catch (Exception exception) {
         System.err.println("Error in width, exception: " + exception);
-        LOG.fine("Failed to parse width, exception: " + exception);
+        log.fine("Failed to parse width, exception: " + exception);
         System.exit(1);
       }
       if (width <= 0) {
         System.err.println("Width must be positive");
-        LOG.fine("Width out of range");
+        log.fine("Width out of range");
         System.exit(1);
       }
     }
@@ -271,12 +265,12 @@ public class Parameters {
         height = ((Float)line.getParsedOptionValue("h")).floatValue();
       } catch (Exception exception) {
         System.err.println("Error in height, exception: " + exception);
-        LOG.fine("Failed to parse height, exception: " + exception);
+        log.fine("Failed to parse height, exception: " + exception);
         System.exit(1);
       }
       if (height <= 0) {
         System.err.println("Height must be positive");
-        LOG.fine("Height out of range");
+        log.fine("Height out of range");
         System.exit(1);
       }
     }
@@ -285,7 +279,7 @@ public class Parameters {
 
     if ((remArgs.length < 3) || (remArgs.length > 4)) {
       usage();
-      LOG.fine("Error in parameters");
+      log.fine("Error in parameters");
       System.exit(1);
     }
 
@@ -293,6 +287,6 @@ public class Parameters {
     yOffset = Float.parseFloat(remArgs[1]);
     fileNames = Arrays.copyOfRange(remArgs, 2, remArgs.length);
 
-    LOG.fine("Parameters set up");
+    log.fine("Parameters set up");
   }
 }
