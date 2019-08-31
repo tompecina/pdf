@@ -63,11 +63,11 @@ public class Parameters {
     	    );
     	options.addOption(
     	    Option.builder("p")
-    	         .longOpt("page-number")
-    	         .hasArg()
+                 .longOpt("page")
+                 .hasArg()
     	         .type(Number.class)
     	         .argName("PAGE")
-    	         .desc("page number")
+                 .desc("page number (default: 1)")
     	         .build()
     	    );
     }
