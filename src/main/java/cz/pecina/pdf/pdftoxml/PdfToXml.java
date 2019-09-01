@@ -12,7 +12,7 @@
  * This application is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.         
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -59,9 +59,7 @@ import org.apache.pdfbox.pdmodel.PDDocument;
 import org.jdom2.Content;
 import org.jdom2.Document;
 import org.jdom2.Element;
-import org.jdom2.JDOMException;
 import org.jdom2.Namespace;
-import org.jdom2.Text;
 
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
@@ -107,7 +105,7 @@ public class PdfToXml {
         .desc("decompress streams")
         .build());
   }
-    
+
   // for description see Object
   @Override
   public String toString() {
@@ -137,14 +135,14 @@ public class PdfToXml {
         return element;
       } catch (Exception expected) { }
     }
-  
+
     if ((data.length > 3) && (data[0] == (0xef - 0x100)) && (data[1] == (0xbb - 0x100)) && (data[2] == (0xbf - 0x100))) {
       try {
         element.addContent(new String(data, "UTF-8"));
         return element;
       } catch (Exception expected) { }
     }
-  
+
     try {
       int esc = 0;
       int codePoint = 0;
@@ -203,7 +201,7 @@ public class PdfToXml {
       element.addContent(string);
       return element;
     } catch (Exception expected) { }
-  
+
     element.setAttribute("format", "hex");
     for (byte b: data) {
       element.addContent(String.format("%02X", b));
@@ -346,7 +344,7 @@ public class PdfToXml {
       log.fine("Application terminated normally");
       System.exit(0);
     }
-  
+
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
       log.fine("Application terminated normally");
@@ -366,7 +364,7 @@ public class PdfToXml {
         usage();
         log.fine("Too few or too many filenames");
         System.exit(1);
-      } 
+      }
     } catch (Exception exception) {
       System.err.println("Error opening files, exception: " + exception);
       log.fine("Error opening files, exception: " + exception);
@@ -377,7 +375,7 @@ public class PdfToXml {
     try {
       final PDDocument pdDocument = PDDocument.load(new File(inFileName));
       final COSDocument cosDocument = pdDocument.getDocument();
-      
+
       final Element pdfElement = new Element("pdf", Namespace.getNamespace(NAMESPACE));
       final Namespace xsiNamespace = Namespace.getNamespace("xsi", XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
       pdfElement.addNamespaceDeclaration(xsiNamespace);
@@ -403,7 +401,7 @@ public class PdfToXml {
         contentElement.addContent(objectElement);
       }
       pdfElement.addContent(contentElement);
-      
+
       new XMLOutputter(Format.getRawFormat()).output(new Document(pdfElement), outPrintStream);
     } catch (Exception exception) {
       System.err.println("Error processing files, exception: " + exception);

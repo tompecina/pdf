@@ -12,7 +12,7 @@
  * This application is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.         
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -90,7 +90,7 @@ public class Parameters {
         .desc("signature field height (default: 36)")
         .build());
   }
-    
+
   // for description see Object
   @Override
   public String toString() {
@@ -109,11 +109,15 @@ public class Parameters {
     System.out.println("\nThe source code is available from <https://github.com/tompecina/pdf>.");
   }
 
+  // constants
+  private static final float DEFAULT_WIDTH = 180;
+  private static final float DEFAULT_HEIGHT = 36;
+
   // parsed parameters
   private float xOffset;
   private float yOffset;
-  private float width = 180;
-  private float height = 36;
+  private float width = DEFAULT_WIDTH;
+  private float height = DEFAULT_HEIGHT;
   private int page = 1;
   private String signatureFieldName = "Signature";
   private String[] fileNames;
@@ -126,7 +130,7 @@ public class Parameters {
   public float getXOffset() {
     return xOffset;
   }
-    
+
   /**
    * Gets the y offset.
    *
@@ -135,7 +139,7 @@ public class Parameters {
   public float getYOffset() {
     return yOffset;
   }
-    
+
   /**
    * Gets the page number.
    *
@@ -144,7 +148,7 @@ public class Parameters {
   public int getPage() {
     return page;
   }
-    
+
   /**
    * Gets signature field name.
    *
@@ -153,7 +157,7 @@ public class Parameters {
   public String getSignatureFieldName() {
     return signatureFieldName;
   }
-    
+
   /**
    * Gets file names.
    *
@@ -162,7 +166,7 @@ public class Parameters {
   public String[] getFileNames() {
     return fileNames;
   }
-    
+
   /**
    * Gets number of file names.
    *
@@ -171,7 +175,7 @@ public class Parameters {
   public int numberFileNames() {
     return fileNames.length;
   }
-    
+
   /**
    * Gets file name.
    *
@@ -181,15 +185,25 @@ public class Parameters {
   public String getFileName(final int n) {
     return fileNames[n];
   }
-    
+
+  /**
+   * Gets box width.
+   *
+   * @return box width
+   */
   public Float getWidth() {
     return width;
   }
-    
+
+  /**
+   * Gets box height.
+   *
+   * @return box height
+   */
   public Float getHeight() {
     return height;
   }
-    
+
   /**
    * Default constructor.
    *
@@ -219,7 +233,7 @@ public class Parameters {
       log.fine("Application terminated normally");
       System.exit(0);
     }
-  
+
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
       log.fine("Application terminated normally");

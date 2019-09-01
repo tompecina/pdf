@@ -12,7 +12,7 @@
  * This application is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.         
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -60,7 +60,7 @@ public class Parameters {
         .desc("show version")
         .build());
   }
-    
+
   // for description see Object
   @Override
   public String toString() {
@@ -88,7 +88,7 @@ public class Parameters {
   public String[] getFileNames() {
     return fileNames;
   }
-    
+
   /**
    * Gets number of file names.
    *
@@ -97,7 +97,7 @@ public class Parameters {
   public int numberFileNames() {
     return fileNames.length;
   }
-    
+
   /**
    * Gets file name.
    *
@@ -107,7 +107,7 @@ public class Parameters {
   public String getFileName(final int n) {
     return fileNames[n];
   }
-    
+
   /**
    * Default constructor.
    *
@@ -137,7 +137,7 @@ public class Parameters {
       log.fine("Application terminated normally");
       System.exit(0);
     }
-  
+
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
       log.fine("Application terminated normally");

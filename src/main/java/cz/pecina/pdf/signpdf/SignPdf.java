@@ -12,7 +12,7 @@
  * This application is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.         
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -34,7 +34,6 @@ import com.itextpdf.kernel.font.PdfFontFactory;
 
 import com.itextpdf.kernel.geom.Rectangle;
 
-import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.StampingProperties;
 
@@ -242,7 +241,7 @@ public class SignPdf {
       log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
-  
+
     log.fine("Application terminated normally");
   }
 }

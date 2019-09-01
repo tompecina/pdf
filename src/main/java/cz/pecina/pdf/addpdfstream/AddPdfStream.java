@@ -12,7 +12,7 @@
  * This application is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.         
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -103,7 +103,7 @@ public class AddPdfStream {
         .desc("compression level (0-9)")
         .build());
   }
-    
+
   // for description see Object
   @Override
   public String toString() {
@@ -149,7 +149,7 @@ public class AddPdfStream {
       log.fine("Application terminated normally");
       System.exit(0);
     }
-  
+
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
       log.fine("Application terminated normally");
@@ -171,7 +171,7 @@ public class AddPdfStream {
         System.exit(1);
       }
     }
-  
+
     final boolean compress = (line.hasOption("c"));
     int compressionLevel = CompressionConstants.DEFAULT_COMPRESSION;
     if (line.hasOption("l")) {
@@ -191,9 +191,9 @@ public class AddPdfStream {
     if (!compress) {
       compressionLevel = CompressionConstants.NO_COMPRESSION;
     }
-  
+
     final String[] fileNames = line.getArgs();
-  
+
     if ((fileNames.length < 2) || (fileNames.length > 3)) {
       usage();
       log.fine("Error in parameters");
@@ -237,7 +237,7 @@ public class AddPdfStream {
       log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
-  
+
     log.fine("Application terminated normally");
   }
 }

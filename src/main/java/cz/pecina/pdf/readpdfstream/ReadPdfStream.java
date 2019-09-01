@@ -12,7 +12,7 @@
  * This application is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.         
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -76,7 +76,7 @@ public class ReadPdfStream {
         .desc("be more verbose")
         .build());
   }
-    
+
   // for description see Object
   @Override
   public String toString() {
@@ -122,7 +122,7 @@ public class ReadPdfStream {
       log.fine("Application terminated normally");
       System.exit(0);
     }
-  
+
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
       log.fine("Application terminated normally");
@@ -134,7 +134,7 @@ public class ReadPdfStream {
     final boolean verbose = (line.hasOption("v"));
 
     final String[] fileNames = line.getArgs();
-  
+
     if (fileNames.length != 1) {
       usage();
       log.fine("Error in parameters");
@@ -167,7 +167,7 @@ public class ReadPdfStream {
       log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
-  
+
     log.fine("Application terminated normally");
   }
 }

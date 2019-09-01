@@ -12,7 +12,7 @@
  * This application is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.         
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -120,7 +120,7 @@ public class Parameters {
         .desc("alias in keystore (in none, first alias is used)")
         .build());
   }
-    
+
   // for description see Object
   @Override
   public String toString() {
@@ -157,7 +157,7 @@ public class Parameters {
   public String getKeyFileName() {
     return keyFileName;
   }
-    
+
   /**
    * Gets password.
    *
@@ -166,7 +166,7 @@ public class Parameters {
   public char[] getPassword() {
     return password;
   }
-    
+
   /**
    * Gets certification level.
    *
@@ -175,7 +175,7 @@ public class Parameters {
   public int getCertificationLevel() {
     return certificationLevel;
   }
-    
+
   /**
    * Gets signature field name.
    *
@@ -184,7 +184,7 @@ public class Parameters {
   public String getSignatureFieldName() {
     return signatureFieldName;
   }
-    
+
   /**
    * Gets signature append flag.
    *
@@ -193,7 +193,7 @@ public class Parameters {
   public boolean getSignatureAppend() {
     return signatureAppend;
   }
-    
+
   /**
    * Gets signature reason.
    *
@@ -202,7 +202,7 @@ public class Parameters {
   public String getReason() {
     return reason;
   }
-    
+
   /**
    * Gets signature location.
    *
@@ -211,7 +211,7 @@ public class Parameters {
   public String getLocation() {
     return location;
   }
-    
+
   /**
    * Gets signer's contact information.
    *
@@ -220,7 +220,7 @@ public class Parameters {
   public String getContact() {
     return contact;
   }
-    
+
   /**
    * Gets file names.
    *
@@ -229,7 +229,7 @@ public class Parameters {
   public String[] getFileNames() {
     return fileNames;
   }
-    
+
   /**
    * Gets alias.
    *
@@ -238,7 +238,7 @@ public class Parameters {
   public String getAlias() {
     return alias;
   }
-    
+
   /**
    * Gets number of file names.
    *
@@ -247,7 +247,7 @@ public class Parameters {
   public int numberFileNames() {
     return fileNames.length;
   }
-    
+
   /**
    * Gets file name.
    *
@@ -257,7 +257,7 @@ public class Parameters {
   public String getFileName(final int n) {
     return fileNames[n];
   }
-    
+
   /**
    * Default constructor.
    *
@@ -287,7 +287,7 @@ public class Parameters {
       log.fine("Application terminated normally");
       System.exit(0);
     }
-  
+
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
       log.fine("Application terminated normally");
@@ -299,7 +299,7 @@ public class Parameters {
       log.fine("Error in paramters, missing key file");
       System.exit(1);
     }
-      
+
     fileNames = line.getArgs();
 
     if ((fileNames.length < 1) || (fileNames.length > 2)) {

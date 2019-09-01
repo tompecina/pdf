@@ -12,7 +12,7 @@
  * This application is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.         
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -35,18 +35,13 @@ import com.itextpdf.kernel.PdfException;
 import com.itextpdf.kernel.geom.Rectangle;
 
 import com.itextpdf.kernel.pdf.PdfArray;
-import com.itextpdf.kernel.pdf.PdfBoolean;
 import com.itextpdf.kernel.pdf.PdfCatalog;
 import com.itextpdf.kernel.pdf.PdfDictionary;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfIndirectReference;
 import com.itextpdf.kernel.pdf.PdfName;
-import com.itextpdf.kernel.pdf.PdfName;
-import com.itextpdf.kernel.pdf.PdfNull;
-import com.itextpdf.kernel.pdf.PdfNumber;
 import com.itextpdf.kernel.pdf.PdfObject;
 import com.itextpdf.kernel.pdf.PdfReader;
-import com.itextpdf.kernel.pdf.PdfString;
 import com.itextpdf.kernel.pdf.PdfString;
 
 import com.itextpdf.kernel.pdf.annot.PdfWidgetAnnotation;
@@ -117,7 +112,7 @@ public class InspectPdf {
         .desc("list PDF objects")
         .build());
   }
-    
+
   // for description see Object
   @Override
   public String toString() {
@@ -165,14 +160,14 @@ public class InspectPdf {
    * Converts a PDF object to a string.
    *
    * @param obj the object to be printed
-   * @oaram level the level of embedding (-1 - contracted)
+   * @param level the level of embedding (-1 - contracted)
    * @return the string value of obj
    *
    */
   private static String stringify(final PdfObject obj, final int level) {
     if ((level != 0) && obj.isIndirect()) {
       final PdfIndirectReference ref = obj.getIndirectReference();
-      return String.format("%d %d R", ref.getObjNumber(),ref.getGenNumber());
+      return String.format("%d %d R", ref.getObjNumber(), ref.getGenNumber());
     } else if (obj instanceof PdfDictionary) {
       final PdfDictionary dict = (PdfDictionary)obj;
       if (level < 0) {
@@ -311,7 +306,7 @@ public class InspectPdf {
       log.fine("Application terminated normally");
       System.exit(0);
     }
-  
+
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
       log.fine("Application terminated normally");

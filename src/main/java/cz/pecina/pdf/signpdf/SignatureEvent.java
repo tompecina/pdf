@@ -12,7 +12,7 @@
  * This application is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.         
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -47,7 +47,7 @@ public class SignatureEvent implements PdfSigner.ISignatureEvent {
   private String reason;
   private String location;
   private String contact;
-    
+
   /**
    * Default constructor.
    *
@@ -55,7 +55,7 @@ public class SignatureEvent implements PdfSigner.ISignatureEvent {
    * @param location signature location
    * @param contact  signer's contact information
    */
-  public SignatureEvent(String reason, String location, String contact) {
+  public SignatureEvent(final String reason, final String location, final String contact) {
     this.reason = reason;
     this.location = location;
     this.contact = contact;

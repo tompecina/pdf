@@ -12,7 +12,7 @@
  * This application is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.         
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -27,7 +27,6 @@ import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -68,7 +67,7 @@ public class AddPdfMeta {
         .desc("show version")
         .build());
   }
-    
+
   // for description see Object
   @Override
   public String toString() {
@@ -114,7 +113,7 @@ public class AddPdfMeta {
       log.fine("Application terminated normally");
       System.exit(0);
     }
-  
+
     if (line.hasOption("V")) {
       System.err.println("1.0.0");
       log.fine("Application terminated normally");
@@ -122,7 +121,7 @@ public class AddPdfMeta {
     }
 
     final String[] fileNames = line.getArgs();
-  
+
     if ((fileNames.length < 2) || (fileNames.length > 3)) {
       usage();
       log.fine("Error in parameters");
@@ -132,7 +131,7 @@ public class AddPdfMeta {
     byte[] inputData = null;
     byte[] metadata = null;
     String outFileName = null;
-  
+
     try {
       inputData = Files.readAllBytes(Paths.get(fileNames[0]));
       metadata = Files.readAllBytes(Paths.get(fileNames[1]));
@@ -155,7 +154,7 @@ public class AddPdfMeta {
       log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
-  
+
     log.fine("Application terminated normally");
   }
 }

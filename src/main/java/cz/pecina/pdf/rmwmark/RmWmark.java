@@ -12,7 +12,7 @@
  * This application is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.         
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -33,7 +33,6 @@ import com.itextpdf.kernel.pdf.canvas.parser.EventType;
 import com.itextpdf.kernel.pdf.canvas.parser.PdfDocumentContentParser;
 
 import com.itextpdf.kernel.pdf.canvas.parser.data.IEventData;
-import com.itextpdf.kernel.pdf.canvas.parser.data.ImageRenderInfo;
 import com.itextpdf.kernel.pdf.canvas.parser.data.ImageRenderInfo;
 
 import com.itextpdf.kernel.pdf.canvas.parser.listener.IEventListener;
@@ -92,8 +91,8 @@ public class RmWmark {
       this.doc = doc;
       this.outDoc = doc.getPdfDocument();
     }
-        
-    public void eventOccurred(IEventData data, EventType type) {
+
+    public void eventOccurred(final IEventData data, final EventType type) {
       final ImageRenderInfo renderInfo = (ImageRenderInfo)data;
       final Matrix ctm = renderInfo.getImageCtm();
       final PdfImageXObject imageXObject = renderInfo.getImage().copyTo(outDoc);
@@ -113,7 +112,7 @@ public class RmWmark {
       firstPage = false;
       doc.add(image);
     }
-  
+
     public Set<EventType> getSupportedEvents() {
       return EnumSet.of(EventType.RENDER_IMAGE);
     }
@@ -167,7 +166,7 @@ public class RmWmark {
       log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
-  
+
     log.fine("Application terminated normally");
   }
 }

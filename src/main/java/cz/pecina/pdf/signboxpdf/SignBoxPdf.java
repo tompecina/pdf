@@ -12,7 +12,7 @@
  * This application is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU Affero General Public License for more details.         
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
@@ -104,7 +104,7 @@ public class SignBoxPdf {
       canvas.setExtGState(extGState);
       canvas.rectangle(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
       canvas.setFillColor(new DeviceRgb(.9f, .92f, 1f));
-      canvas.fill();                         
+      canvas.fill();
       canvas.release();
       pdfDocument.close();
       writer.close();
@@ -114,7 +114,7 @@ public class SignBoxPdf {
       log.fine("Error processing files, exception: " + exception);
       System.exit(1);
     }
-  
+
     log.fine("Application terminated normally");
   }
 }
