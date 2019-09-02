@@ -23,9 +23,7 @@
 package cz.pecina.pdf.signboxpdf;
 
 import java.util.Arrays;
-
 import java.util.logging.Logger;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;

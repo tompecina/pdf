@@ -26,21 +26,16 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintStream;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.logging.Logger;
-
 import javax.xml.XMLConstants;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-
 import org.apache.pdfbox.cos.COSArray;
 import org.apache.pdfbox.cos.COSBase;
 import org.apache.pdfbox.cos.COSBoolean;
@@ -53,17 +48,13 @@ import org.apache.pdfbox.cos.COSNull;
 import org.apache.pdfbox.cos.COSObject;
 import org.apache.pdfbox.cos.COSStream;
 import org.apache.pdfbox.cos.COSString;
-
 import org.apache.pdfbox.pdmodel.PDDocument;
-
 import org.jdom2.Content;
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.Namespace;
-
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
-
 
 /**
  * Convert PDF file to XML.
@@ -114,7 +105,7 @@ public class PdfToXml {
 
   // check if character is printable ASCII
   private static boolean isPrintable(final int ch) {
-    return (ord < ((int) ' ')) && (ord != ((int) '\t')) && (ord != ((int) '\r')) && (ord != ((int) '\n'));
+    return (ch < ((int) ' ')) && (ch != ((int) '\t')) && (ch != ((int) '\r')) && (ch != ((int) '\n'));
   }
 
   // guess type of byte array and create proper representation
@@ -179,7 +170,7 @@ public class PdfToXml {
           } else {
             throw new Exception();
           }
-          if ((esc == 0) && (codePoint < SPACE) && (codePoint != TAB) && (codePoint != CR) && (codePoint != LF)) {
+          if ((esc == 0) && isPrintable(codePoint)) {
             throw new Exception();
           }
         }

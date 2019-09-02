@@ -30,25 +30,19 @@ import com.itextpdf.kernel.pdf.PdfName;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfStream;
 import com.itextpdf.kernel.pdf.PdfWriter;
-
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import java.util.HashMap;
 import java.util.Map;
-
 import java.util.logging.Logger;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-
 
 /**
  * Adds stream to existing PDF file.

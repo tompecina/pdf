@@ -25,9 +25,7 @@ package cz.pecina.pdf.addpdfmeta;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
-
 import java.util.logging.Logger;
-
 
 /**
  * Modified PDF document.

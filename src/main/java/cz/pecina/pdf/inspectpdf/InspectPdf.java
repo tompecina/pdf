@@ -23,17 +23,11 @@
 package cz.pecina.pdf.inspectpdf;
 
 import com.itextpdf.forms.PdfAcroForm;
-
 import com.itextpdf.forms.fields.PdfFormField;
-
 import com.itextpdf.io.IOException;
-
 import com.itextpdf.io.font.PdfEncodings;
-
 import com.itextpdf.kernel.PdfException;
-
 import com.itextpdf.kernel.geom.Rectangle;
-
 import com.itextpdf.kernel.pdf.PdfArray;
 import com.itextpdf.kernel.pdf.PdfCatalog;
 import com.itextpdf.kernel.pdf.PdfDictionary;
@@ -43,31 +37,21 @@ import com.itextpdf.kernel.pdf.PdfName;
 import com.itextpdf.kernel.pdf.PdfObject;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfString;
-
 import com.itextpdf.kernel.pdf.annot.PdfWidgetAnnotation;
-
 import com.itextpdf.signatures.CertificateInfo;
 import com.itextpdf.signatures.CertificateUtil;
 import com.itextpdf.signatures.PdfPKCS7;
 import com.itextpdf.signatures.SignaturePermissions;
 import com.itextpdf.signatures.SignatureUtil;
-
 import java.security.GeneralSecurityException;
 import java.security.Security;
-
 import java.security.cert.X509Certificate;
-
 import java.util.List;
 import java.util.Set;
-
 import java.util.logging.Logger;
-
 import org.bouncycastle.cert.X509CertificateHolder;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 import org.bouncycastle.tsp.TimeStampToken;
-
 
 /**
  * Inspect PDF file.

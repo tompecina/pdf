@@ -23,27 +23,18 @@
 package cz.pecina.pdf.signboxpdf;
 
 import com.itextpdf.forms.fields.PdfFormField;
-
 import com.itextpdf.kernel.colors.DeviceRgb;
-
 import com.itextpdf.kernel.geom.Rectangle;
-
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
-
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
-
 import com.itextpdf.kernel.pdf.extgstate.PdfExtGState;
-
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import java.util.logging.Logger;
-
 
 /**
  * Stamp PDF file.

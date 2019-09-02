@@ -24,10 +24,8 @@ package cz.pecina.pdf.signpdf;
 
 import com.itextpdf.kernel.pdf.PdfDictionary;
 import com.itextpdf.kernel.pdf.PdfName;
-
 import com.itextpdf.signatures.PdfSignature;
 import com.itextpdf.signatures.PdfSigner;
-
 
 /**
  * Event removing unneeded fields.

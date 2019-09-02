@@ -23,16 +23,13 @@
 package cz.pecina.pdf.stamppdf;
 
 import java.util.Arrays;
-
 import java.util.logging.Logger;
-
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
-
 
 /**
  * Parse command line and extract parameters.

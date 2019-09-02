@@ -23,26 +23,17 @@
 package cz.pecina.pdf.signpdf;
 
 import com.itextpdf.io.font.PdfEncodings;
-
 import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
-
 import com.itextpdf.kernel.colors.ColorConstants;
-
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
-
 import com.itextpdf.kernel.geom.Rectangle;
-
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.StampingProperties;
-
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
-
 import com.itextpdf.kernel.pdf.xobject.PdfFormXObject;
-
 import com.itextpdf.layout.element.Image;
-
 import com.itextpdf.signatures.BouncyCastleDigest;
 import com.itextpdf.signatures.CertificateInfo;
 import com.itextpdf.signatures.DigestAlgorithms;
@@ -50,27 +41,19 @@ import com.itextpdf.signatures.PdfSignatureAppearance;
 import com.itextpdf.signatures.PdfSigner;
 import com.itextpdf.signatures.PrivateKeySignature;
 import com.itextpdf.signatures.SignatureUtil;
-
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.Security;
-
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-
 import java.util.Calendar;
-
 import java.util.logging.Logger;
-
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-
 
 /**
  * Sign PDF file.

@@ -23,26 +23,19 @@
 package cz.pecina.pdf.stamppdf;
 
 import com.itextpdf.io.font.PdfEncodings;
-
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
-
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.StampingProperties;
-
 import com.itextpdf.kernel.pdf.canvas.PdfCanvas;
-
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
-
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
 import java.util.logging.Logger;
-
 
 /**
  * Stamp PDF file.
