@@ -100,7 +100,8 @@ public class AddPdfStream {
         .hasArg()
         .type(Number.class)
         .argName("LEVEL")
-        .desc("compression level (0-9)")
+        .desc(String.format(
+            "compression level (%d-%d)", CompressionConstants.NO_COMPRESSION, CompressionConstants.BEST_COMPRESSION))
         .build());
   }
 
@@ -158,10 +159,10 @@ public class AddPdfStream {
 
     final String streamType = (line.hasOption("t") ? line.getOptionValue("t") : "Data");
 
-    final Map<String,String> pairs = new HashMap<>();
+    final Map<String, String> pairs = new HashMap<>();
     if (line.hasOption("d")) {
       try {
-        for (String pairString: line.getOptionValue("d").split(",")) {
+        for (String pairString : line.getOptionValue("d").split(",")) {
           final String[] pair = pairString.split(":");
           pairs.put(pair[0], pair[1]);
         }
@@ -176,14 +177,17 @@ public class AddPdfStream {
     int compressionLevel = CompressionConstants.DEFAULT_COMPRESSION;
     if (line.hasOption("l")) {
       try {
-        compressionLevel = ((Number)line.getParsedOptionValue("l")).intValue();
+        compressionLevel = ((Number) line.getParsedOptionValue("l")).intValue();
       } catch (Exception exception) {
         System.err.println("Error in compression level, exception: " + exception);
         log.fine("Failed to parse compression level, exception: " + exception);
         System.exit(1);
       }
-      if ((compressionLevel < 0) || (compressionLevel > 9)) {
-        System.err.println("Compression level must be 0-9");
+      if ((compressionLevel < CompressionConstants.NO_COMPRESSION)
+          || (compressionLevel > CompressionConstants.BEST_COMPRESSION)) {
+        System.err.println(String.format(
+            "Compression level must be (%d-%d)",
+            CompressionConstants.NO_COMPRESSION, CompressionConstants.BEST_COMPRESSION));
         log.fine("Compression level out of range");
         System.exit(1);
       }
@@ -217,7 +221,7 @@ public class AddPdfStream {
       final PdfWriter writer = new PdfWriter(outFileName);
       final PdfDocument pdfDocument = new PdfDocument(reader, writer);
       final PdfStream pdfStream = new PdfStream(pdfDocument, new FileInputStream(fileNames[1]));
-      for (String key: pairs.keySet()) {
+      for (String key : pairs.keySet()) {
         pdfStream.put(new PdfName(key), new PdfName(pairs.get(key)));
       }
       if (compress) {
@@ -225,7 +229,7 @@ public class AddPdfStream {
       }
       final PdfName streamPdfName = new PdfName(streamType);
       final PdfCatalog catalog = pdfDocument.getCatalog();
-      if (((PdfDictionary)catalog.getPdfObject()).get(streamPdfName) != null) {
+      if (((PdfDictionary) catalog.getPdfObject()).get(streamPdfName) != null) {
         catalog.remove(streamPdfName);
       }
       catalog.put(streamPdfName, pdfStream);

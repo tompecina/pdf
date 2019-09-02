@@ -317,7 +317,7 @@ public class Parameters {
 
     if (line.hasOption("c")) {
       try {
-        certificationLevel = ((Number)line.getParsedOptionValue("c")).intValue();
+        certificationLevel = ((Number) line.getParsedOptionValue("c")).intValue();
       } catch (Exception exception) {
         System.err.println("Error in certification level, exception: " + exception);
         log.fine("Failed to parse certification level, exception: " + exception);

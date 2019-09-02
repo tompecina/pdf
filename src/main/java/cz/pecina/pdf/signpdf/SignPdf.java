@@ -83,6 +83,20 @@ public class SignPdf {
   // static logger
   private static final Logger log = Logger.getLogger(SignPdf.class.getName());
 
+  // estimated signature size
+  private static final int SIGN_SIZE = 4096;
+
+  // box dimensions
+  private static final float BOX_HEIGHT = 36f;
+  private static final float BOX_X_MARGIN = 8f;
+  private static final float BOX_Y_MARGIN = 7f;
+  private static final float BIG = 10000f;
+  private static final float SMALL = .01f;
+
+  // font constants
+  private static final float FONT_SIZE = 7f;
+  private static final float FONT_LEADING = 8.5f;
+
   // for description see Object
   @Override
   public String toString() {
@@ -130,7 +144,7 @@ public class SignPdf {
       } else {
         alias = keyStore.aliases().nextElement();
       }
-      key = (PrivateKey)keyStore.getKey(alias, parameters.getPassword());
+      key = (PrivateKey) keyStore.getKey(alias, parameters.getPassword());
       certificateChain = keyStore.getCertificateChain(alias);
     } catch (Exception exception) {
       System.err.println("Error setting up cryptography, exception: " + exception);
@@ -186,7 +200,7 @@ public class SignPdf {
         bottom = bbox.getBottom();
         width = bbox.getWidth();
         height = bbox.getHeight();
-        if (height < 35.99) {
+        if (height < (BOX_HEIGHT - SMALL)) {
           System.err.println("Signature field is too small");
           log.fine("Signature field is too small");
           System.exit(1);
@@ -198,10 +212,11 @@ public class SignPdf {
           imageFileName = "sealappr.png";
         }
         final ImageData imageData = ImageDataFactory.create(SignPdf.class.getResource("graphics/" + imageFileName));
-        final Image image = new Image(imageData, 0f, (height - 36f));
-        image.scaleToFit(10000f, 36f);
+        final Image image = new Image(imageData, 0f, (height - BOX_HEIGHT));
+        image.scaleToFit(BIG, BOX_HEIGHT);
         final PdfCanvas canvas2 = new PdfCanvas(n2, signer.getDocument());
-        final Rectangle rect = new Rectangle(0f, (height - 36f), image.getImageScaledWidth(), image.getImageScaledHeight());
+        final Rectangle rect =
+            new Rectangle(0f, (height - BOX_HEIGHT), image.getImageScaledWidth(), image.getImageScaledHeight());
         canvas2.addImage(imageData, rect, false);
         final String resourcePath = "cz/pecina/pdf";
         final PdfFont brm = PdfFontFactory.createFont(
@@ -209,32 +224,28 @@ public class SignPdf {
         final PdfFont bbf = PdfFontFactory.createFont(
             resourcePath + "/fonts/Carlito-Bold.ttf", PdfEncodings.IDENTITY_H, true);
         canvas2.beginText();
-        canvas2.setTextMatrix((rect.getWidth() + 8f), (height - 7f));
-        canvas2.setLeading(8.5f);
-        canvas2.setFontAndSize(brm, 7f);
+        canvas2.setTextMatrix((rect.getWidth() + BOX_X_MARGIN), (height - BOX_Y_MARGIN));
+        canvas2.setLeading(FONT_LEADING);
+        canvas2.setFontAndSize(brm, FONT_SIZE);
         canvas2.showText("Digitálně podepsal: ");
-        canvas2.setFontAndSize(bbf, 7f);
-        canvas2.showText(CertificateInfo.getSubjectFields((X509Certificate)(certificateChain[0])).getField("CN"));
-        canvas2.setFontAndSize(brm, 7f);
+        canvas2.setFontAndSize(bbf, FONT_SIZE);
+        canvas2.showText(CertificateInfo.getSubjectFields((X509Certificate) certificateChain[0]).getField("CN"));
+        canvas2.setFontAndSize(brm, FONT_SIZE);
         canvas2.newlineText();
         canvas2.showText(
-            "Certifikát: " + CertificateInfo.getSubjectFields((X509Certificate)(certificateChain[0])).getField("OU"));
+            "Certifikát: " + CertificateInfo.getSubjectFields((X509Certificate) certificateChain[0]).getField("OU"));
         canvas2.newlineText();
         canvas2.showText(
-            "Vydal: " + CertificateInfo.getIssuerFields((X509Certificate)(certificateChain[0])).getField("CN"));
+            "Vydal: " + CertificateInfo.getIssuerFields((X509Certificate) certificateChain[0]).getField("CN"));
         canvas2.newlineText();
         final Calendar dt = signer.getSignDate();
         canvas2.showText(String.format(
             "Datum a čas:  %02d.%02d.%d %02d:%02d:%02d",
-            dt.get(dt.DAY_OF_MONTH),
-            (dt.get(dt.MONTH) + 1),
-            dt.get(dt.YEAR),
-            dt.get(dt.HOUR_OF_DAY),
-            dt.get(dt.MINUTE),
-            dt.get(dt.SECOND)));
+            dt.get(dt.DAY_OF_MONTH), (dt.get(dt.MONTH) + 1), dt.get(dt.YEAR),
+            dt.get(dt.HOUR_OF_DAY), dt.get(dt.MINUTE), dt.get(dt.SECOND)));
         canvas2.endText();
       }
-      signer.signDetached(digest, signature, certificateChain, null, null, null, 4096, PdfSigner.CryptoStandard.CMS);
+      signer.signDetached(digest, signature, certificateChain, null, null, null, SIGN_SIZE, PdfSigner.CryptoStandard.CMS);
       reader.close();
     } catch (Exception exception) {
       System.err.println("Error processing files, exception: " + exception);

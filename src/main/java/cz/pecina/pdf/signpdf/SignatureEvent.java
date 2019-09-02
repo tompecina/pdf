@@ -64,7 +64,7 @@ public class SignatureEvent implements PdfSigner.ISignatureEvent {
   // for description see PdfSignatureAppearance.SignatureEvent
   @Override
   public void getSignatureDictionary(final PdfSignature sig) {
-    final PdfDictionary dict = (PdfDictionary)(sig.getPdfObject());
+    final PdfDictionary dict = (PdfDictionary) sig.getPdfObject();
     if (reason == null) {
       dict.remove(PdfName.Reason);
     }

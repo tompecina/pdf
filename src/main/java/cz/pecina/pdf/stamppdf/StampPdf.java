@@ -61,6 +61,11 @@ public class StampPdf {
     return "StampPdf";
   }
 
+  // font constants
+  private static final float FONT_SIZE = 9f;
+  private static final float FONT_LEADING = 11f;
+  private static final float CHAR_SPACING = 0.1f;
+
   /**
    * Main method.
    *
@@ -103,9 +108,9 @@ public class StampPdf {
       final String resourcePath = "cz/pecina/pdf";
       final PdfFont baseFont =
           PdfFontFactory.createFont(resourcePath + "/fonts/LiberationSans-Regular.ttf", PdfEncodings.IDENTITY_H, true);
-      canvas.setFontAndSize(baseFont, 9);
-      canvas.setCharacterSpacing(0.1f);
-      canvas.setLeading(11);
+      canvas.setFontAndSize(baseFont, FONT_SIZE);
+      canvas.setCharacterSpacing(CHAR_SPACING);
+      canvas.setLeading(FONT_LEADING);
       if (xOffset < 0) {
         xOffset = pdfPage.getPageSize().getWidth() + xOffset;
       }
@@ -113,7 +118,7 @@ public class StampPdf {
         yOffset = pdfPage.getPageSize().getHeight() + yOffset;
       }
       canvas.setTextMatrix(xOffset, yOffset);
-      for (String line: text.split("^")) {
+      for (String line : text.split("^")) {
         canvas.showText(line);
         canvas.newlineText();
         canvas.endText();

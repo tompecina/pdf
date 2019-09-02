@@ -87,13 +87,13 @@ public class RmWmark {
     private PdfDocument outDoc;
     private boolean firstPage = true;
 
-    public Listener(final Document doc) {
+    Listener(final Document doc) {
       this.doc = doc;
       this.outDoc = doc.getPdfDocument();
     }
 
     public void eventOccurred(final IEventData data, final EventType type) {
-      final ImageRenderInfo renderInfo = (ImageRenderInfo)data;
+      final ImageRenderInfo renderInfo = (ImageRenderInfo) data;
       final Matrix ctm = renderInfo.getImageCtm();
       final PdfImageXObject imageXObject = renderInfo.getImage().copyTo(outDoc);
       final float i11 = norm(ctm.get(Matrix.I11));
@@ -126,7 +126,7 @@ public class RmWmark {
   public static void main(final String[] args) {
     log.fine("Application started");
 
-    Parameters parameters = new Parameters(args);
+    final Parameters parameters = new Parameters(args);
 
     byte[] inputData = null;
     String outFileName = null;

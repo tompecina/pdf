@@ -1,4 +1,4 @@
-/* ReadPdfStream.java
+/* Parameters.java
  *
  * Copyright (C) 2015-19, Tomas Pecina <tomas@pecina.cz>
  *
@@ -20,13 +20,7 @@
  * The source code is available from <https://github.com/tompecina/pdf>.
  */
 
-package cz.pecina.pdf.readpdfstream;
-
-import com.itextpdf.kernel.pdf.PdfDictionary;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfName;
-import com.itextpdf.kernel.pdf.PdfReader;
-import com.itextpdf.kernel.pdf.PdfStream;
+package cz.pecina.pdf.inspectpdf;
 
 import java.util.logging.Logger;
 
@@ -39,15 +33,15 @@ import org.apache.commons.cli.Options;
 
 
 /**
- * Reads stream from PDF file.
+ * Parse command line and extract parameters.
  *
  * @author Tomáš Pecina
  * @version 1.0.0
  */
-public class ReadPdfStream {
+public class Parameters {
 
   // static logger
-  private static final Logger log = Logger.getLogger(ReadPdfStream.class.getName());
+  private static final Logger log = Logger.getLogger(Parameters.class.getName());
 
   // options
   private static final Options options = new Options();
@@ -64,42 +58,72 @@ public class ReadPdfStream {
         .desc("show version")
         .build());
     options.addOption(
-        Option.builder("t")
-        .longOpt("type")
-        .hasArg()
-        .argName("TYPE")
-        .desc("type of the stream in the catalog (default: Data)")
+        Option.builder("m")
+        .longOpt("metadata")
+        .desc("print metadata")
         .build());
     options.addOption(
-        Option.builder("v")
-        .longOpt("verbose")
-        .desc("be more verbose")
+        Option.builder("o")
+        .longOpt("objects")
+        .desc("list PDF objects")
         .build());
   }
 
   // for description see Object
   @Override
   public String toString() {
-    return "ReadPdfStream";
+    return "Parameters";
   }
 
   /**
    * Prints usage information.
    *
    */
-  private static void usage() {
+  public void usage() {
     final HelpFormatter helpFormatter = new HelpFormatter();
-    helpFormatter.printHelp("readpdfstream [options] infile", options);
+    helpFormatter.printHelp("inspectpdf [options] infile", options);
     System.out.println("\nThe source code is available from <https://github.com/tompecina/pdf>.");
   }
 
+  // parsed parameters
+  private boolean printMetadata;
+  private boolean listObjects;
+  private String inFileName;
+
   /**
-   * Main method.
+   * Gets print metadata flag.
+   *
+   * @return print metadata flag
+   */
+  public boolean getPrintMetadata() {
+    return printMetadata;
+  }
+
+  /**
+   * Gets list objects flag.
+   *
+   * @return list objects flag
+   */
+  public boolean getListObjects() {
+    return listObjects;
+  }
+
+  /**
+   * Gets input file name.
+   *
+   * @return input file name
+   */
+  public String getInFileName() {
+    return inFileName;
+  }
+
+  /**
+   * Default constructor.
    *
    * @param args command-line arguments
    */
-  public static void main(final String[] args) {
-    log.fine("Application started");
+  public Parameters(final String[] args) {
+    log.fine("Parameters started");
 
     if ((args == null) || (args.length < 1)) {
       usage();
@@ -110,7 +134,7 @@ public class ReadPdfStream {
     final CommandLineParser parser = new DefaultParser();
     CommandLine line = null;
     try {
-      line = parser.parse(options, args);
+      line = parser.parse(options, args, true);
     } catch (Exception exception) {
       usage();
       log.fine("Failed to parse the command line, exception: " + exception);
@@ -129,45 +153,16 @@ public class ReadPdfStream {
       System.exit(0);
     }
 
-    final String streamType = (line.hasOption("t") ? line.getOptionValue("t") : "Data");
+    final String[] remArgs = line.getArgs();
 
-    final boolean verbose = (line.hasOption("v"));
-
-    final String[] fileNames = line.getArgs();
-
-    if (fileNames.length != 1) {
+    if (remArgs.length > 1) {
       usage();
       log.fine("Error in parameters");
       System.exit(1);
     }
 
-    final String inFileName = fileNames[0];
+    inFileName = remArgs[0];
 
-    try {
-      final PdfReader reader = new PdfReader(inFileName);
-      final PdfDocument pdfDocument = new PdfDocument(reader);
-      final PdfDictionary catalog = (PdfDictionary) pdfDocument.getCatalog().getPdfObject();
-      final PdfName streamPdfName = new PdfName(streamType);
-      if (!catalog.containsKey(streamPdfName)) {
-        System.err.println("Stream '" + streamType + "' not found");
-        log.fine("Stream not found");
-        System.exit(1);
-      }
-      final PdfStream pdfStream = catalog.getAsStream(streamPdfName);
-      if (verbose) {
-        System.out.println("Dictionary:");
-        for (PdfName key : pdfStream.keySet()) {
-          System.out.println("  " + key + ": " + pdfStream.get(key));
-        }
-        System.out.println();
-      }
-      System.out.print(new String(pdfStream.getBytes(), "utf-8"));
-    } catch (Exception exception) {
-      System.err.println("Error processing files, exception: " + exception);
-      log.fine("Error processing files, exception: " + exception);
-      System.exit(1);
-    }
-
-    log.fine("Application terminated normally");
+    log.fine("Parameters set up");
   }
 }

@@ -56,6 +56,7 @@ public class ModifiedPdfDocument extends PdfDocument {
   }
 
   // for description see PdfDocument
+  @Override
   protected void updateXmpMetadata() {
   }
 }

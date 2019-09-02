@@ -62,6 +62,9 @@ public class SignBoxPdf {
     return "SignBoxPdf";
   }
 
+  // background color
+  private static final DeviceRgb BG_COLOR = new DeviceRgb(.9f, .92f, 1f);
+
   /**
    * Main method.
    *
@@ -103,7 +106,7 @@ public class SignBoxPdf {
       extGState.setBlendMode(PdfExtGState.BM_MULTIPLY);
       canvas.setExtGState(extGState);
       canvas.rectangle(rect.getX(), rect.getY(), rect.getWidth(), rect.getHeight());
-      canvas.setFillColor(new DeviceRgb(.9f, .92f, 1f));
+      canvas.setFillColor(BG_COLOR);
       canvas.fill();
       canvas.release();
       pdfDocument.close();

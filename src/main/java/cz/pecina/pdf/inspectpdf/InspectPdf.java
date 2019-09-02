@@ -62,13 +62,6 @@ import java.util.Set;
 
 import java.util.logging.Logger;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-
 import org.bouncycastle.cert.X509CertificateHolder;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -86,32 +79,6 @@ public class InspectPdf {
 
   // static logger
   private static final Logger log = Logger.getLogger(InspectPdf.class.getName());
-
-  // options
-  private static final Options options = new Options();
-
-  static {
-    options.addOption(
-        Option.builder("?")
-        .longOpt("help")
-        .desc("show usage information")
-        .build());
-    options.addOption(
-        Option.builder("V")
-        .longOpt("version")
-        .desc("show version")
-        .build());
-    options.addOption(
-        Option.builder("m")
-        .longOpt("metadata")
-        .desc("print metadata")
-        .build());
-    options.addOption(
-        Option.builder("o")
-        .longOpt("objects")
-        .desc("list PDF objects")
-        .build());
-  }
 
   // for description see Object
   @Override
@@ -169,10 +136,10 @@ public class InspectPdf {
       final PdfIndirectReference ref = obj.getIndirectReference();
       return String.format("%d %d R", ref.getObjNumber(), ref.getGenNumber());
     } else if (obj instanceof PdfDictionary) {
-      final PdfDictionary dict = (PdfDictionary)obj;
+      final PdfDictionary dict = (PdfDictionary) obj;
       if (level < 0) {
         final StringBuilder res = new StringBuilder("<< ");
-        for (PdfName key: dict.keySet()) {
+        for (PdfName key : dict.keySet()) {
           res.append(key.toString());
           res.append(' ');
           res.append(stringify(dict.get(key), -1));
@@ -184,7 +151,7 @@ public class InspectPdf {
         final String prefix = String.format("%" + ((level + 1) * INDENT) + "s", "");
         final StringBuilder res = new StringBuilder();
         final Set<PdfName> keys = dict.keySet();
-        for (PdfName key: keys) {
+        for (PdfName key : keys) {
           final PdfObject sub = dict.get(key);
           res.append(String.format("%n%s%s: %s", prefix, key.getValue(), stringify(sub, level + 1)));
         }
@@ -193,7 +160,7 @@ public class InspectPdf {
     } else if (obj instanceof PdfArray) {
       final StringBuilder res = new StringBuilder("[");
       boolean notFirst = false;
-      for (PdfObject sub: (PdfArray)obj) {
+      for (PdfObject sub : (PdfArray) obj) {
         if (notFirst) {
           res.append(' ');
         }
@@ -203,11 +170,11 @@ public class InspectPdf {
       res.append(']');
       return res.toString();
     } else if (obj instanceof PdfString) {
-      final PdfString str = (PdfString)obj;
+      final PdfString str = (PdfString) obj;
       final byte[] bytes = str.getValueBytes();
       final StringBuilder res = new StringBuilder();
       String substr = null;
-      if ((bytes.length > 2) && (bytes[0] == (byte)0xfe) && (bytes[1] == (byte)0xff)) {
+      if ((bytes.length > 2) && (bytes[0] == (byte) 0xfe) && (bytes[1] == (byte) 0xff)) {
         try {
           substr = PdfEncodings.convertToString(bytes, PdfEncodings.UNICODE_BIG);
         } catch (IOException exception) {
@@ -215,7 +182,7 @@ public class InspectPdf {
         }
       } else {
         int score = 0;
-        for (byte ch: bytes) {
+        for (byte ch : bytes) {
           final int inc = PDF_DOC_ENCODING_BYTE_LIKELYHOOD[ch & 0xff];
           if (inc == IMP) {
             score = 0;
@@ -233,7 +200,7 @@ public class InspectPdf {
       }
       if (substr == null) {
         res.append('<');
-        for (byte ch: str.getValueBytes()) {
+        for (byte ch : str.getValueBytes()) {
           res.append(String.format("%02X", ch));
         }
         res.append('>');
@@ -241,7 +208,7 @@ public class InspectPdf {
       }
       if (level < 0) {
         res.insert(0, '(');
-        for (char ch: substr.toCharArray()) {
+        for (char ch : substr.toCharArray()) {
           if ((ch == '(') || (ch == ')')) {
             res.append("\\");
           }
@@ -267,14 +234,18 @@ public class InspectPdf {
     return stringify(obj, 0);
   }
 
-  /**
-   * Prints usage information.
-   *
-   */
-  private static void usage() {
-    final HelpFormatter helpFormatter = new HelpFormatter();
-    helpFormatter.printHelp("inspectpdf [options] infile", options);
-    System.out.println("\nThe source code is available from <https://github.com/tompecina/pdf>.");
+  // set up cryptography
+  private static BouncyCastleProvider setUpCrypto() {
+    BouncyCastleProvider provider = new BouncyCastleProvider();
+    try {
+      provider = new BouncyCastleProvider();
+      Security.addProvider(provider);
+    } catch (Exception exception) {
+      System.err.println("Error setting up cryptography, exception: " + exception);
+      log.fine("Error setting up cryptography, exception: " + exception);
+      System.exit(1);
+    }
+    return provider;
   }
 
   /**
@@ -285,49 +256,16 @@ public class InspectPdf {
   public static void main(final String[] args) {
     log.fine("Application started");
 
-    if ((args == null) || (args.length < 1)) {
-      usage();
-      log.fine("Error in parameters");
-      System.exit(1);
-    }
+    final Parameters parameters = new Parameters(args);
 
-    final CommandLineParser parser = new DefaultParser();
-    CommandLine line = null;
-    try {
-      line = parser.parse(options, args);
-    } catch (Exception exception) {
-      usage();
-      log.fine("Failed to parse the command line, exception: " + exception);
-      System.exit(1);
-    }
+    final boolean printMetadata = parameters.getPrintMetadata();
+    final boolean listObjects = parameters.getListObjects();
+    final String inFileName = parameters.getInFileName();
 
-    if (line.hasOption("?")) {
-      usage();
-      log.fine("Application terminated normally");
-      System.exit(0);
-    }
-
-    if (line.hasOption("V")) {
-      System.err.println("1.0.0");
-      log.fine("Application terminated normally");
-      System.exit(0);
-    }
-
-    final boolean listObjects = line.hasOption("o");
-    final boolean printMetadata = line.hasOption("m");
-
-    BouncyCastleProvider provider = null;
-    try {
-      provider = new BouncyCastleProvider();
-      Security.addProvider(provider);
-    } catch (Exception exception) {
-      System.err.println("Error setting up cryptography, exception: " + exception);
-      log.fine("Error setting up cryptography, exception: " + exception);
-      System.exit(1);
-    }
+    final BouncyCastleProvider provider = setUpCrypto();
 
     try {
-      final PdfReader reader = new PdfReader((line.getArgs())[0]);
+      final PdfReader reader = new PdfReader(inFileName);
       final PdfDocument pdfDocument = new PdfDocument(reader);
 
       System.out.println("Version: " + pdfDocument.getPdfVersion());
@@ -366,7 +304,7 @@ public class InspectPdf {
       if (!names.isEmpty()) {
         final PdfAcroForm acroForm = PdfAcroForm.getAcroForm(pdfDocument, false);
         SignaturePermissions permissions = null;
-        for (String name: names) {
+        for (String name : names) {
           System.out.println(String.format("Signature '%s':", name));
           System.out.println("  Signature covers whole document: " + yn(util.signatureCoversWholeDocument(name)));
           System.out.println("  Document revision: " + util.getRevision(name) + " of " + util.getTotalRevisions());
@@ -414,7 +352,7 @@ public class InspectPdf {
             System.out.println("  TimeStamp service: " + timeStamp.getTimeStampInfo().getTsa());
             System.out.println("  TimeStamp verified: " + yn(pkcs7.verifyTimestampImprint()));
             final X509CertificateHolder holder =
-                (X509CertificateHolder)(timeStamp.getCertificates().getMatches(null).iterator().next());
+                (X509CertificateHolder) timeStamp.getCertificates().getMatches(null).iterator().next();
             System.out.println("  TimeStamp valid from: " + holder.getNotBefore());
             System.out.println("  TimeStamp valid to: " + holder.getNotAfter());
           }
@@ -428,10 +366,10 @@ public class InspectPdf {
           System.out.println("  Signature type: " + signatureType);
           System.out.println("  Filling out fields allowed: " + yn(permissions.isFillInAllowed()));
           System.out.println("  Adding annotations allowed: " + yn(permissions.isAnnotationsAllowed()));
-          for (SignaturePermissions.FieldLock fieldLock: permissions.getFieldLocks()) {
+          for (SignaturePermissions.FieldLock fieldLock : permissions.getFieldLocks()) {
             System.out.println("  Lock: " + fieldLock.toString());
           }
-          for (X509Certificate chainCertificate: (X509Certificate[])pkcs7.getSignCertificateChain()) {
+          for (X509Certificate chainCertificate : (X509Certificate[]) pkcs7.getSignCertificateChain()) {
             System.out.println();
             System.out.println("  Issuer: " + chainCertificate.getIssuerX500Principal());
             System.out.println("  Subject: " + chainCertificate.getSubjectX500Principal());

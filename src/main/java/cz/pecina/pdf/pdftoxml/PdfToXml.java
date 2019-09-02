@@ -112,6 +112,11 @@ public class PdfToXml {
     return "PdfToXml";
   }
 
+  // check if character is printable ASCII
+  private static boolean isPrintable(final int ch) {
+    return (ord < ((int) ' ')) && (ord != ((int) '\t')) && (ord != ((int) '\r')) && (ord != ((int) '\n'));
+  }
+
   // guess type of byte array and create proper representation
   private static Element createDataElement(final byte[] data, final String elementName) {
     final Element element = new Element(elementName, NAMESPACE);
@@ -119,9 +124,9 @@ public class PdfToXml {
     element.setAttribute("format", "text");
     try {
       final String string = new String(data, "ASCII");
-      for (char ch: string.toCharArray()) {
-        final int ord = (int)ch;
-        if ((ord >= 0x7f) || ((ord < 0x20) && (ord != 0x09) && (ord != 0x0a) && (ord != 0x0d))) {
+      for (char ch : string.toCharArray()) {
+        final int ord = (int) ch;
+        if ((ord >= 0x7f) || isPrintable(ord)) {
           throw new Exception();
         }
       }
@@ -129,14 +134,14 @@ public class PdfToXml {
       return element;
     } catch (Exception expected) { }
 
-    if ((data.length > 2) && (data[0] == (0xfe - 0x100)) && (data[1] == (0xff - 0x100))) {
+    if ((data.length > 2) && (data[0] == ((byte) 0xfe)) && (data[1] == ((byte) 0xff))) {
       try {
         element.addContent(new String(data, "UTF-16"));
         return element;
       } catch (Exception expected) { }
     }
 
-    if ((data.length > 3) && (data[0] == (0xef - 0x100)) && (data[1] == (0xbb - 0x100)) && (data[2] == (0xbf - 0x100))) {
+    if ((data.length > 3) && (data[0] == ((byte) 0xef)) && (data[1] == ((byte) 0xbb)) && (data[2] == ((byte) 0xbf))) {
       try {
         element.addContent(new String(data, "UTF-8"));
         return element;
@@ -146,7 +151,7 @@ public class PdfToXml {
     try {
       int esc = 0;
       int codePoint = 0;
-      for (byte b: data) {
+      for (byte b : data) {
         if (esc > 0) {
           if ((b & 0xc0) != 0x80) {
             throw new Exception();
@@ -174,27 +179,27 @@ public class PdfToXml {
           } else {
             throw new Exception();
           }
-          if ((esc == 0) && (codePoint < 0x20) && (codePoint != 0x09) && (codePoint != 0x0a) && (codePoint != 0x0d)) {
+          if ((esc == 0) && (codePoint < SPACE) && (codePoint != TAB) && (codePoint != CR) && (codePoint != LF)) {
             throw new Exception();
           }
         }
       }
       final String string = new String(data, "UTF-8");
-      for (char ch: string.toCharArray()) {
-        final int ord = (int)ch;
-        if ((ord < 0x20) && (ord != 0x09) && (ord != 0x0a) && (ord != 0x0d)) {
+      for (char ch : string.toCharArray()) {
+        final int ord = (int) ch;
+        if (isPrintable(ord)) {
           throw new Exception();
         }
       }
       element.addContent(string);
       return element;
     } catch (Exception expected) { }
-    
+
     try {
       final String string = new String(data, "ISO-8859-1");
-      for (char ch: string.toCharArray()) {
-        final int ord = (int)ch;
-        if ((ord < 0x20) && (ord != 0x09) && (ord != 0x0a) && (ord != 0x0d)) {
+      for (char ch : string.toCharArray()) {
+        final int ord = (int) ch;
+        if (isPrintable(ord)) {
           throw new Exception();
         }
       }
@@ -203,7 +208,7 @@ public class PdfToXml {
     } catch (Exception expected) { }
 
     element.setAttribute("format", "hex");
-    for (byte b: data) {
+    for (byte b : data) {
       element.addContent(String.format("%02X", b));
     }
     return element;
@@ -216,12 +221,12 @@ public class PdfToXml {
       if (b == -1) {
         break;
       }
-      buffer.add((byte)b);
+      buffer.add((byte) b);
     }
     final byte[] bytes = new byte[buffer.size()];
     int i = 0;
-    for (Object b: buffer.toArray()) {
-      bytes[i++] = (Byte)b;
+    for (Object b : buffer.toArray()) {
+      bytes[i++] = (Byte) b;
     }
     return createDataElement(bytes, elementName);
   }
@@ -230,14 +235,14 @@ public class PdfToXml {
   private static Content createObjectElement(final COSBase object, final boolean decompress) throws IOException {
     if (object instanceof COSArray) {
       final Element arrayElement = new Element("array", NAMESPACE);
-      for (COSBase item: (COSArray)object) {
+      for (COSBase item : (COSArray) object) {
         arrayElement.addContent(createObjectElement(item, decompress));
       }
       return arrayElement;
     }
     if (object instanceof COSBoolean) {
       final Element booleanElement = new Element("boolean", NAMESPACE);
-      if (((COSBoolean)object).getValue()) {
+      if (((COSBoolean) object).getValue()) {
         booleanElement.addContent("true");
       } else {
         booleanElement.addContent("false");
@@ -246,23 +251,23 @@ public class PdfToXml {
     }
     if (object instanceof COSStream) {
       final Element streamElement = new Element("stream", NAMESPACE);
-      streamElement.addContent(createObjectElement(new COSDictionary((COSDictionary)object), decompress));
+      streamElement.addContent(createObjectElement(new COSDictionary((COSDictionary) object), decompress));
       if (decompress) {
-        streamElement.addContent(createDataElement(((COSStream)object).createInputStream(), "data"));
+        streamElement.addContent(createDataElement(((COSStream) object).createInputStream(), "data"));
       } else {
-        streamElement.addContent(createDataElement(((COSStream)object).createRawInputStream(), "raw"));
+        streamElement.addContent(createDataElement(((COSStream) object).createRawInputStream(), "raw"));
       }
       return streamElement;
     }
     if (object instanceof COSDictionary) {
       final Element dictionaryElement = new Element("dictionary", NAMESPACE);
-      for (COSName key: ((COSDictionary)object).keySet()) {
+      for (COSName key : ((COSDictionary) object).keySet()) {
         final Element entryElement = new Element("entry", NAMESPACE);
         final Element keyElement = new Element("key", NAMESPACE);
         keyElement.addContent(key.getName());
         entryElement.addContent(keyElement);
         final Element valueElement = new Element("value", NAMESPACE);
-        valueElement.addContent(createObjectElement(((COSDictionary)object).getItem(key), decompress));
+        valueElement.addContent(createObjectElement(((COSDictionary) object).getItem(key), decompress));
         entryElement.addContent(valueElement);
         dictionaryElement.addContent(entryElement);
       }
@@ -271,16 +276,16 @@ public class PdfToXml {
     if (object instanceof COSObject) {
       final Element indirectReferenceElement = new Element("indirect-reference", NAMESPACE);
       final Element numberElement = new Element("number", NAMESPACE);
-      numberElement.addContent("" + ((COSObject)object).getObjectNumber());
+      numberElement.addContent("" + ((COSObject) object).getObjectNumber());
       indirectReferenceElement.addContent(numberElement);
       final Element generationElement = new Element("generation", NAMESPACE);
-      generationElement.addContent("" + ((COSObject)object).getGenerationNumber());
+      generationElement.addContent("" + ((COSObject) object).getGenerationNumber());
       indirectReferenceElement.addContent(generationElement);
       return indirectReferenceElement;
     }
     if (object instanceof COSName) {
       final Element nameElement = new Element("name", NAMESPACE);
-      nameElement.addContent(((COSName)object).getName());
+      nameElement.addContent(((COSName) object).getName());
       return nameElement;
     }
     if (object instanceof COSNull) {
@@ -288,16 +293,16 @@ public class PdfToXml {
     }
     if (object instanceof COSFloat) {
       final Element numberElement = new Element("number", NAMESPACE);
-      numberElement.addContent("" + ((COSFloat)object).intValue());
+      numberElement.addContent("" + ((COSFloat) object).intValue());
       return numberElement;
     }
     if (object instanceof COSInteger) {
       final Element numberElement = new Element("number", NAMESPACE);
-      numberElement.addContent("" + ((COSInteger)object).intValue());
+      numberElement.addContent("" + ((COSInteger) object).intValue());
       return numberElement;
     }
     if (object instanceof COSString) {
-      return createDataElement(((COSString)object).getBytes(), "string");
+      return createDataElement(((COSString) object).getBytes(), "string");
     }
     System.err.println("Bad PDF object type");
     log.fine("Bad PDF object type");
@@ -393,7 +398,7 @@ public class PdfToXml {
       pdfElement.addContent(trailerElement);
 
       final Element contentElement = new Element("content", NAMESPACE);
-      for (COSObject object: cosDocument.getObjects()) {
+      for (COSObject object : cosDocument.getObjects()) {
         final Element objectElement = new Element("object", NAMESPACE);
         objectElement.setAttribute("number", "" + object.getObjectNumber());
         objectElement.setAttribute("generation", "" + object.getGenerationNumber());

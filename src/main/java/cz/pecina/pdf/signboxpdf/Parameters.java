@@ -246,7 +246,7 @@ public class Parameters {
 
     if (line.hasOption("p")) {
       try {
-        page = ((Number)line.getParsedOptionValue("p")).intValue();
+        page = ((Number) line.getParsedOptionValue("p")).intValue();
       } catch (Exception exception) {
         System.err.println("Error in page number, exception: " + exception);
         log.fine("Failed to parse page number, exception: " + exception);
@@ -261,7 +261,7 @@ public class Parameters {
 
     if (line.hasOption("w")) {
       try {
-        width = ((Float)line.getParsedOptionValue("w")).floatValue();
+        width = ((Float) line.getParsedOptionValue("w")).floatValue();
       } catch (Exception exception) {
         System.err.println("Error in width, exception: " + exception);
         log.fine("Failed to parse width, exception: " + exception);
@@ -276,7 +276,7 @@ public class Parameters {
 
     if (line.hasOption("h")) {
       try {
-        height = ((Float)line.getParsedOptionValue("h")).floatValue();
+        height = ((Float) line.getParsedOptionValue("h")).floatValue();
       } catch (Exception exception) {
         System.err.println("Error in height, exception: " + exception);
         log.fine("Failed to parse height, exception: " + exception);
