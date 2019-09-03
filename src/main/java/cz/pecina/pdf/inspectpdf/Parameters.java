@@ -151,6 +151,9 @@ public class Parameters {
       System.exit(0);
     }
 
+    printMetadata = line.hasOption("m");
+    listObjects = line.hasOption("o");
+
     final String[] remArgs = line.getArgs();
 
     if (remArgs.length > 1) {

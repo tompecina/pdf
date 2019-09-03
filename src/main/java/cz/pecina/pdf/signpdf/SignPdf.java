@@ -70,9 +70,9 @@ public class SignPdf {
   private static final int SIGN_SIZE = 4096;
 
   // box dimensions
-  private static final float BOX_HEIGHT = 36f;
-  private static final float BOX_X_MARGIN = 8f;
-  private static final float BOX_Y_MARGIN = 7f;
+  private static final float IMAGE_HEIGHT = 36f;
+  private static final float IMAGE_X_MARGIN = 8f;
+  private static final float IMAGE_Y_MARGIN = 7f;
   private static final float BIG = 10000f;
   private static final float SMALL = .01f;
 
@@ -183,7 +183,7 @@ public class SignPdf {
         bottom = bbox.getBottom();
         width = bbox.getWidth();
         height = bbox.getHeight();
-        if (height < (BOX_HEIGHT - SMALL)) {
+        if (height < (IMAGE_HEIGHT - SMALL)) {
           System.err.println("Signature field is too small");
           log.fine("Signature field is too small");
           System.exit(1);
@@ -195,11 +195,11 @@ public class SignPdf {
           imageFileName = "sealappr.png";
         }
         final ImageData imageData = ImageDataFactory.create(SignPdf.class.getResource("graphics/" + imageFileName));
-        final Image image = new Image(imageData, 0f, (height - BOX_HEIGHT));
-        image.scaleToFit(BIG, BOX_HEIGHT);
+        final Image image = new Image(imageData, 0f, (height - IMAGE_HEIGHT));
+        image.scaleToFit(BIG, IMAGE_HEIGHT);
         final PdfCanvas canvas2 = new PdfCanvas(n2, signer.getDocument());
         final Rectangle rect =
-            new Rectangle(0f, (height - BOX_HEIGHT), image.getImageScaledWidth(), image.getImageScaledHeight());
+            new Rectangle(0f, (height - IMAGE_HEIGHT), image.getImageScaledWidth(), image.getImageScaledHeight());
         canvas2.addImage(imageData, rect, false);
         final String resourcePath = "cz/pecina/pdf";
         final PdfFont brm = PdfFontFactory.createFont(
@@ -207,7 +207,7 @@ public class SignPdf {
         final PdfFont bbf = PdfFontFactory.createFont(
             resourcePath + "/fonts/Carlito-Bold.ttf", PdfEncodings.IDENTITY_H, true);
         canvas2.beginText();
-        canvas2.setTextMatrix((rect.getWidth() + BOX_X_MARGIN), (height - BOX_Y_MARGIN));
+        canvas2.setTextMatrix((rect.getWidth() + IMAGE_X_MARGIN), (height - IMAGE_Y_MARGIN));
         canvas2.setLeading(FONT_LEADING);
         canvas2.setFontAndSize(brm, FONT_SIZE);
         canvas2.showText("Digitálně podepsal: ");
