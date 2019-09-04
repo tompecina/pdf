@@ -23,7 +23,6 @@
 package cz.pecina.pdf.signpdf;
 
 import com.itextpdf.io.font.PdfEncodings;
-import com.itextpdf.io.image.ImageData;
 import com.itextpdf.io.image.ImageDataFactory;
 import com.itextpdf.kernel.colors.ColorConstants;
 import com.itextpdf.kernel.font.PdfFont;
@@ -41,9 +40,11 @@ import com.itextpdf.signatures.PdfSignatureAppearance;
 import com.itextpdf.signatures.PdfSigner;
 import com.itextpdf.signatures.PrivateKeySignature;
 import com.itextpdf.signatures.SignatureUtil;
+import com.itextpdf.svg.converter.SvgConverter;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyStore;
@@ -68,17 +69,6 @@ public class SignPdf {
 
   // estimated signature size
   private static final int SIGN_SIZE = 4096;
-
-  // box dimensions
-  private static final float IMAGE_HEIGHT = 36f;
-  private static final float IMAGE_X_MARGIN = 8f;
-  private static final float IMAGE_Y_MARGIN = 7f;
-  private static final float BIG = 10000f;
-  private static final float SMALL = .01f;
-
-  // font constants
-  private static final float FONT_SIZE = 7f;
-  private static final float FONT_LEADING = 8.5f;
 
   // for description see Object
   @Override
@@ -167,53 +157,95 @@ public class SignPdf {
           new SignatureEvent(parameters.getReason(), parameters.getLocation(), parameters.getContact()));
       if (parameters.getSignatureFieldName() != null) {
         signer.setFieldName(parameters.getSignatureFieldName());
+
         final PdfFormXObject n0 = signatureAppearance.getLayer0();
-        Rectangle bbox = n0.getBBox().toRectangle();
-        float left = bbox.getLeft();
-        float bottom = bbox.getBottom();
-        float width = bbox.getWidth();
-        float height = bbox.getHeight();
+        final Rectangle bbox0 = n0.getBBox().toRectangle();
         final PdfCanvas canvas0 = new PdfCanvas(n0, signer.getDocument());
         canvas0.setFillColor(ColorConstants.WHITE);
-        canvas0.rectangle(left, bottom, width, height);
+        canvas0.rectangle(bbox0);
         canvas0.fill();
+        canvas0.release();
+
         final PdfFormXObject n2 = signatureAppearance.getLayer2();
-        bbox = n2.getBBox().toRectangle();
-        left = bbox.getLeft();
-        bottom = bbox.getBottom();
-        width = bbox.getWidth();
-        height = bbox.getHeight();
-        if (height < (IMAGE_HEIGHT - SMALL)) {
-          System.err.println("Signature field is too small");
-          log.fine("Signature field is too small");
-          System.exit(1);
-        }
-        String imageFileName = null;
-        if (parameters.getCertificationLevel() > 0) {
-          imageFileName = "sealcer.png";
-        } else {
-          imageFileName = "sealappr.png";
-        }
-        final ImageData imageData = ImageDataFactory.create(SignPdf.class.getResource("graphics/" + imageFileName));
-        final Image image = new Image(imageData, 0f, (height - IMAGE_HEIGHT));
-        image.scaleToFit(BIG, IMAGE_HEIGHT);
+        final Rectangle bbox2 = n2.getBBox().toRectangle();
+        final float fieldLeft = bbox2.getLeft();
+        final float fieldBottom = bbox2.getBottom();
+        final float fieldWidth = bbox2.getWidth();
+        final float fieldHeight = bbox2.getHeight();
         final PdfCanvas canvas2 = new PdfCanvas(n2, signer.getDocument());
-        final Rectangle rect =
-            new Rectangle(0f, (height - IMAGE_HEIGHT), image.getImageScaledWidth(), image.getImageScaledHeight());
-        canvas2.addImage(imageData, rect, false);
-        final String resourcePath = "cz/pecina/pdf";
-        final PdfFont brm = PdfFontFactory.createFont(
-            resourcePath + "/fonts/Carlito-Regular.ttf", PdfEncodings.IDENTITY_H, true);
-        final PdfFont bbf = PdfFontFactory.createFont(
-            resourcePath + "/fonts/Carlito-Bold.ttf", PdfEncodings.IDENTITY_H, true);
+
+        final String imageFilename = parameters.getImageFilename();
+        InputStream imageStream = null;
+        boolean svg = false;
+        if (imageFilename == null) {
+          imageStream = SignPdf.class.getResourceAsStream(
+              "graphics/seal" + ((parameters.getCertificationLevel() > 0) ? "cer" : "appr") + ".png");
+        } else {
+          svg = imageFilename.toLowerCase().endsWith(".svg");
+          imageStream = new FileInputStream(imageFilename);
+        }
+        final Image image =
+            svg
+              ? SvgConverter.convertToImage(imageStream, signer.getDocument())
+              : new Image(ImageDataFactory.create(imageStream.readAllBytes()));
+        final float imageOrigWidth = image.getImageWidth();
+        final float imageOrigHeight = image.getImageHeight();
+        float imageWidth = parameters.getImageWidth();
+        float imageHeight = parameters.getImageHeight();
+        float imageScaleX = 1f;
+        float imageScaleY = 1f;
+        if ((imageWidth > 0f) && (imageHeight > 0f)) {
+          imageScaleX = imageWidth / imageOrigWidth;
+          imageScaleY = imageHeight / imageOrigHeight;
+        } else if (imageWidth > 0f) {
+          imageScaleX = imageScaleY = imageWidth / imageOrigWidth;
+          imageHeight = imageOrigHeight * imageScaleY;
+        } else if (imageHeight > 0f) {
+          imageScaleX = imageScaleY = imageHeight / imageOrigHeight;
+          imageWidth = imageOrigWidth * imageScaleX;
+        } else {
+          imageWidth = imageOrigWidth;
+          imageHeight = imageOrigHeight;
+        }
+        if (!svg) {
+          imageScaleX = imageWidth;
+          imageScaleY = imageHeight;
+        }
+        float imageX = parameters.getImageX();
+        if (parameters.getImageXDir()) {
+          imageX = fieldWidth - imageWidth - imageX;
+        }
+        float imageY = parameters.getImageY();
+        if (parameters.getImageYDir()) {
+          imageY = fieldHeight - imageHeight - imageY;
+        }
+        imageX += fieldLeft;
+        imageY += fieldBottom;
+        canvas2.addXObject(image.getXObject(), new Rectangle(imageX, imageY, imageScaleX, imageScaleY));
+
+        float textX = parameters.getTextX();
+        if (parameters.getTextXDir()) {
+          textX += fieldWidth - textX;
+        }
+        float textY = parameters.getTextY();
+        if (parameters.getTextYDir()) {
+          textY = fieldHeight - textY;
+        }
+        textX += fieldLeft;
+        textY += fieldBottom;
+        final PdfFont brm = PdfFontFactory.createFont(parameters.getRegularFontFilename(), PdfEncodings.IDENTITY_H, true);
+        final PdfFont bbf = PdfFontFactory.createFont(parameters.getBoldFontFilename(), PdfEncodings.IDENTITY_H, true);
+        final float fontSize = parameters.getFontSize();
+        final float leading = parameters.getLeading();
+        canvas2.setFillColor(parameters.getFontColor());
         canvas2.beginText();
-        canvas2.setTextMatrix((rect.getWidth() + IMAGE_X_MARGIN), (height - IMAGE_Y_MARGIN));
-        canvas2.setLeading(FONT_LEADING);
-        canvas2.setFontAndSize(brm, FONT_SIZE);
+        canvas2.setTextMatrix(textX, textY);
+        canvas2.setLeading(leading);
+        canvas2.setFontAndSize(brm, fontSize);
         canvas2.showText("Digitálně podepsal: ");
-        canvas2.setFontAndSize(bbf, FONT_SIZE);
+        canvas2.setFontAndSize(bbf, fontSize);
         canvas2.showText(CertificateInfo.getSubjectFields((X509Certificate) certificateChain[0]).getField("CN"));
-        canvas2.setFontAndSize(brm, FONT_SIZE);
+        canvas2.setFontAndSize(brm, fontSize);
         canvas2.newlineText();
         canvas2.showText(
             "Certifikát: " + CertificateInfo.getSubjectFields((X509Certificate) certificateChain[0]).getField("OU"));
@@ -227,6 +259,7 @@ public class SignPdf {
             dt.get(dt.DAY_OF_MONTH), (dt.get(dt.MONTH) + 1), dt.get(dt.YEAR),
             dt.get(dt.HOUR_OF_DAY), dt.get(dt.MINUTE), dt.get(dt.SECOND)));
         canvas2.endText();
+        canvas2.release();
       }
       signer.signDetached(digest, signature, certificateChain, null, null, null, SIGN_SIZE, PdfSigner.CryptoStandard.CMS);
       reader.close();

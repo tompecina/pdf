@@ -29,8 +29,6 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
     <bindir>${project.build.directory}/bin</bindir>
   </properties>
 
@@ -73,6 +71,11 @@
     <dependency>
       <groupId>com.itextpdf</groupId>
       <artifactId>sign</artifactId>
+      <version>7.1.7</version>
+    </dependency>
+    <dependency>
+      <groupId>com.itextpdf</groupId>
+      <artifactId>svg</artifactId>
       <version>7.1.7</version>
     </dependency>
 
@@ -125,6 +128,7 @@
 	<artifactId>maven-compiler-plugin</artifactId>
 	<version>3.8.1</version>
 	<configuration>
+          <release>12</release>
           <showDeprecation>true</showDeprecation>
           <showWarnings>true</showWarnings>
 	</configuration>
@@ -147,7 +151,7 @@
 	<executions>
 	  <execution>
 	    <id>make-assembly</id>
-	    <phase>package</phase> 
+	    <phase>package</phase>
 	    <goals>
 	      <goal>single</goal>
 	    </goals>

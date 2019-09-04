@@ -75,7 +75,7 @@ public class Parameters {
         Option.builder("w")
         .longOpt("width")
         .hasArg()
-        .type(Float.class)
+        .type(Number.class)
         .argName("WIDTH")
         .desc("signature field width (default: 180)")
         .build());
@@ -83,7 +83,7 @@ public class Parameters {
         Option.builder("h")
         .longOpt("height")
         .hasArg()
-        .type(Float.class)
+        .type(Number.class)
         .argName("HEIGHT")
         .desc("signature field height (default: 36)")
         .build());
@@ -259,7 +259,7 @@ public class Parameters {
 
     if (line.hasOption("w")) {
       try {
-        width = ((Float) line.getParsedOptionValue("w")).floatValue();
+        width = Float.parseFloat(line.getOptionValue("w"));
       } catch (Exception exception) {
         System.err.println("Error in width, exception: " + exception);
         log.fine("Failed to parse width, exception: " + exception);
@@ -274,7 +274,7 @@ public class Parameters {
 
     if (line.hasOption("h")) {
       try {
-        height = ((Float) line.getParsedOptionValue("h")).floatValue();
+        height = Float.parseFloat(line.getOptionValue("h"));
       } catch (Exception exception) {
         System.err.println("Error in height, exception: " + exception);
         log.fine("Failed to parse height, exception: " + exception);
