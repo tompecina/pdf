@@ -57,7 +57,7 @@ public class Parameters {
   private static final String DEFAULT_BOLD_FONT = RESOURCE_PATH + "/fonts/Carlito-Bold.ttf";
   private static final float DEFAULT_FONT_SIZE = 7f;
   private static final float DEFAULT_LEADING = 8.5f;
-  private static final float DEFAULT_TEXT_X = 28f;
+  private static final float DEFAULT_TEXT_X = 35f;
   private static final boolean DEFAULT_TEXT_X_DIR = false;
   private static final float DEFAULT_TEXT_Y = 7f;
   private static final boolean DEFAULT_TEXT_Y_DIR = true;

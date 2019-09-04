@@ -176,10 +176,9 @@ public class SignPdf {
 
         final String imageFilename = parameters.getImageFilename();
         InputStream imageStream = null;
-        boolean svg = false;
+        boolean svg = true;
         if (imageFilename == null) {
-          imageStream = SignPdf.class.getResourceAsStream(
-              "graphics/seal" + ((parameters.getCertificationLevel() > 0) ? "cer" : "appr") + ".png");
+          imageStream = SignPdf.class.getResourceAsStream("graphics/seal.svg");
         } else {
           svg = imageFilename.toLowerCase().endsWith(".svg");
           imageStream = new FileInputStream(imageFilename);
