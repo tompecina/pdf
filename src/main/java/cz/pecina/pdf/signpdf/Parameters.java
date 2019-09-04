@@ -45,11 +45,11 @@ public class Parameters {
 
   // image defaults
   private static final float DEFAULT_IMAGE_WIDTH = 0f;
-  private static final float DEFAULT_IMAGE_HEIGHT = 36f;
+  private static final float DEFAULT_IMAGE_HEIGHT = 0f;
   private static final float DEFAULT_IMAGE_X = 0f;
   private static final boolean DEFAULT_IMAGE_X_DIR = false;
   private static final float DEFAULT_IMAGE_Y = 0f;
-  private static final boolean DEFAULT_IMAGE_Y_DIR = true;
+  private static final boolean DEFAULT_IMAGE_Y_DIR = false;
 
   // font and text defaults
   private static final String RESOURCE_PATH = "cz/pecina/pdf";
