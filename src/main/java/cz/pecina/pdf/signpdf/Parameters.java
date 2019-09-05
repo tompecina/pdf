@@ -167,7 +167,7 @@ public class Parameters {
         .hasArg()
         .type(Number.class)
         .argName("POS")
-        .desc(String.format("image x-position (default: %s)", DEFAULT_IMAGE_X))
+        .desc(String.format("image x-position (default: %s%s)", (DEFAULT_IMAGE_X_DIR ? "-" : ""), DEFAULT_IMAGE_X))
         .build());
     options.addOption(
         Option.builder(null)
@@ -175,7 +175,7 @@ public class Parameters {
         .hasArg()
         .type(Number.class)
         .argName("POS")
-        .desc(String.format("image y-position (default: %s)", DEFAULT_IMAGE_Y))
+        .desc(String.format("image y-position (default: %s%s)", (DEFAULT_IMAGE_Y_DIR ? "-" : ""), DEFAULT_IMAGE_Y))
         .build());
     options.addOption(
         Option.builder(null)
@@ -220,7 +220,7 @@ public class Parameters {
         .hasArg()
         .type(Number.class)
         .argName("POS")
-        .desc(String.format("text x-position (default: %s)", DEFAULT_TEXT_X))
+        .desc(String.format("text x-position (default: %s%s)", (DEFAULT_TEXT_X_DIR ? "-" : ""), DEFAULT_TEXT_X))
         .build());
     options.addOption(
         Option.builder(null)
@@ -228,7 +228,7 @@ public class Parameters {
         .hasArg()
         .type(Number.class)
         .argName("POS")
-        .desc(String.format("text y-position (default: %s)", DEFAULT_TEXT_Y))
+        .desc(String.format("text y-position (default: %s%s)", (DEFAULT_TEXT_Y_DIR ? "-" : ""), DEFAULT_TEXT_Y))
         .build());
   }
 
