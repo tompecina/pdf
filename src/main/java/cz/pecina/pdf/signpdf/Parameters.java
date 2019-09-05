@@ -532,53 +532,12 @@ public class Parameters {
     return fileNames[n];
   }
 
-  /**
-   * Default constructor.
-   *
-   * @param args command-line arguments
-   */
-  public Parameters(final String[] args) {
-    log.fine("Parameters started");
-
-    if ((args == null) || (args.length < 1)) {
-      usage();
-      log.fine("Error in parameters");
-      System.exit(1);
-    }
-
-    final CommandLineParser parser = new DefaultParser();
-    CommandLine line = null;
-    try {
-      line = parser.parse(options, args);
-    } catch (Exception exception) {
-      usage();
-      log.fine("Failed to parse the command line, exception: " + exception);
-      System.exit(1);
-    }
-
-    if (line.hasOption("?")) {
-      usage();
-      log.fine("Application terminated normally");
-      System.exit(0);
-    }
-
-    if (line.hasOption("V")) {
-      System.err.println("1.0.0");
-      log.fine("Application terminated normally");
-      System.exit(0);
-    }
+  // process signature-related parameters
+  private void processSig(final CommandLine line) {
 
     if (!line.hasOption("k")) {
       System.err.println("Key file is required");
       log.fine("Error in paramters, missing key file");
-      System.exit(1);
-    }
-
-    fileNames = line.getArgs();
-
-    if ((fileNames.length < 1) || (fileNames.length > 2)) {
-      usage();
-      log.fine("Error in parameters");
       System.exit(1);
     }
 
@@ -623,6 +582,10 @@ public class Parameters {
     if (line.hasOption("A")) {
       alias = line.getOptionValue("A");
     }
+  }
+
+  // process appearance-related parameters
+  private void processApp(final CommandLine line) {
 
     if (line.hasOption("image-file")) {
       imageFilename = line.getOptionValue("image-file");
@@ -758,6 +721,55 @@ public class Parameters {
       }
       textYDir = line.getOptionValue("text-y").startsWith("-");
     }
+  }
+
+  /**
+   * Default constructor.
+   *
+   * @param args command-line arguments
+   */
+  public Parameters(final String[] args) {
+    log.fine("Parameters started");
+
+    if ((args == null) || (args.length < 1)) {
+      usage();
+      log.fine("Error in parameters");
+      System.exit(1);
+    }
+
+    final CommandLineParser parser = new DefaultParser();
+    CommandLine line = null;
+    try {
+      line = parser.parse(options, args);
+    } catch (Exception exception) {
+      usage();
+      log.fine("Failed to parse the command line, exception: " + exception);
+      System.exit(1);
+    }
+
+    if (line.hasOption("?")) {
+      usage();
+      log.fine("Application terminated normally");
+      System.exit(0);
+    }
+
+    if (line.hasOption("V")) {
+      System.err.println("1.0.0");
+      log.fine("Application terminated normally");
+      System.exit(0);
+    }
+
+    fileNames = line.getArgs();
+
+    if ((fileNames.length < 1) || (fileNames.length > 2)) {
+      usage();
+      log.fine("Error in parameters");
+      System.exit(1);
+    }
+
+    processSig(line);
+
+    processApp(line);
 
     log.fine("Parameters set up");
   }
