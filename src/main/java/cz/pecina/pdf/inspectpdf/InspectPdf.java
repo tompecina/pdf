@@ -372,7 +372,7 @@ public class InspectPdf {
         for (int i = 0; i < numObjects; i++) {
           final PdfObject pdfObject = pdfDocument.getPdfObject(i);
           if (pdfObject != null) {
-            System.out.println(String.format("%d:%s%n", i, stringify(pdfObject)));
+            System.out.println(String.format("%d: %s%n", i, stringify(pdfObject)));
           }
         }
       }
