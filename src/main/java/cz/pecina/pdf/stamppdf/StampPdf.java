@@ -26,6 +26,7 @@ import com.itextpdf.io.font.PdfEncodings;
 import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfDocument;
+import com.itextpdf.kernel.pdf.PdfName;
 import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -56,7 +57,7 @@ public class StampPdf {
 
   // font constants
   private static final float FONT_SIZE = 9f;
-  private static final float FONT_LEADING = 11f;
+  private static final float LEADING = 11f;
   private static final float CHAR_SPACING = 0.1f;
 
   /**
@@ -88,27 +89,26 @@ public class StampPdf {
       final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
       final StampingProperties prop = new StampingProperties().preserveEncryption().useAppendMode();
       final PdfWriter writer = new PdfWriter(new FileOutputStream(outFileName));
-      final PdfDocument pdfDocument = new PdfDocument(reader, writer, prop);
+      final PdfDocument doc = new PdfDocument(reader, writer, prop);
       final int pageNum = parameters.getPageNum();
-      if (pageNum > pdfDocument.getNumberOfPages()) {
-        System.err.println("Illegal page number");
-        log.fine("Illegal page number");
+      if (pageNum > doc.getNumberOfPages()) {
+        System.err.println("Invalid page number");
+        log.fine("Invalid page number");
         System.exit(1);
       }
-      final PdfPage pdfPage = pdfDocument.getPage(pageNum);
-      final PdfCanvas canvas = new PdfCanvas(pdfPage.newContentStreamBefore(), pdfPage.getResources(), pdfDocument);
-      canvas.beginText();
+      final PdfPage page = doc.getPage(pageNum);
+      final PdfCanvas canvas = new PdfCanvas(page.newContentStreamBefore(), page.getResources(), doc);
       final String resourcePath = "cz/pecina/pdf";
-      final PdfFont baseFont =
-          PdfFontFactory.createFont(resourcePath + "/fonts/LiberationSans-Regular.ttf", PdfEncodings.IDENTITY_H, true);
+      final PdfFont baseFont = PdfFontFactory.createFont(resourcePath + "/fonts/LiberationSans-Regular.ttf", PdfEncodings.IDENTITY_H, true);
+      canvas.beginText();
       canvas.setFontAndSize(baseFont, FONT_SIZE);
       canvas.setCharacterSpacing(CHAR_SPACING);
-      canvas.setLeading(FONT_LEADING);
+      canvas.setLeading(LEADING);
       if (xOffset < 0) {
-        xOffset = pdfPage.getPageSize().getWidth() + xOffset;
+        xOffset = page.getPageSize().getWidth() + xOffset;
       }
       if (yOffset < 0) {
-        yOffset = pdfPage.getPageSize().getHeight() + yOffset;
+        yOffset = page.getPageSize().getHeight() + yOffset;
       }
       canvas.setTextMatrix(xOffset, yOffset);
       for (String line : text.split("^")) {
@@ -116,7 +116,8 @@ public class StampPdf {
         canvas.newlineText();
         canvas.endText();
       }
-      pdfDocument.close();
+      canvas.release();
+      doc.close();
       reader.close();
     } catch (Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
