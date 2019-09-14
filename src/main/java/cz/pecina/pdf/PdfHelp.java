@@ -89,7 +89,7 @@ public class PdfHelp {
     CommandLine line = null;
     try {
       line = parser.parse(OPTIONS, args);
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       usage();
       log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);

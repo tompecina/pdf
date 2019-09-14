@@ -97,7 +97,7 @@ public class AddPdfMeta {
     CommandLine line = null;
     try {
       line = parser.parse(options, args);
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       usage();
       log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
@@ -131,7 +131,7 @@ public class AddPdfMeta {
       inputData = Files.readAllBytes(Paths.get(fileNames[0]));
       metadata = Files.readAllBytes(Paths.get(fileNames[1]));
       outFileName = fileNames[(fileNames.length == 2) ? 0 : 2];
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error opening files, exception: " + exception);
       log.fine("Error opening files, exception: " + exception);
       System.exit(1);
@@ -144,7 +144,7 @@ public class AddPdfMeta {
       pdfDocument.close();
       writer.close();
       reader.close();
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
       log.fine("Error processing files, exception: " + exception);
       System.exit(1);

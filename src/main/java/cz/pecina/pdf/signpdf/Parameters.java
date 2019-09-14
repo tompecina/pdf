@@ -551,7 +551,7 @@ public class Parameters {
     if (line.hasOption("c")) {
       try {
         certificationLevel = ((Number) line.getParsedOptionValue("c")).intValue();
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in certification level, exception: " + exception);
         log.fine("Failed to parse certification level, exception: " + exception);
         System.exit(1);
@@ -594,7 +594,7 @@ public class Parameters {
     if (line.hasOption("image-width")) {
       try {
         imageWidth = Float.parseFloat(line.getOptionValue("image-width"));
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in width, exception: " + exception);
         log.fine("Failed to parse width, exception: " + exception);
         System.exit(1);
@@ -609,7 +609,7 @@ public class Parameters {
     if (line.hasOption("image-height")) {
       try {
         imageHeight = Float.parseFloat(line.getOptionValue("image-height"));
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in height, exception: " + exception);
         log.fine("Failed to parse height, exception: " + exception);
         System.exit(1);
@@ -624,7 +624,7 @@ public class Parameters {
     if (line.hasOption("image-x")) {
       try {
         imageX = Math.abs(Float.parseFloat(line.getOptionValue("image-x")));
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in image x-position, exception: " + exception);
         log.fine("Failed to parse image x-position, exception: " + exception);
         System.exit(1);
@@ -635,7 +635,7 @@ public class Parameters {
     if (line.hasOption("image-y")) {
       try {
         imageY = Math.abs(Float.parseFloat(line.getOptionValue("image-y")));
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in image y-position, exception: " + exception);
         log.fine("Failed to parse image y-position, exception: " + exception);
         System.exit(1);
@@ -654,7 +654,7 @@ public class Parameters {
     if (line.hasOption("font-size")) {
       try {
         fontSize = Float.parseFloat(line.getOptionValue("font-size"));
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in font size, exception: " + exception);
         log.fine("Failed to parse font size, exception: " + exception);
         System.exit(1);
@@ -669,7 +669,7 @@ public class Parameters {
     if (line.hasOption("leading")) {
       try {
         leading = Float.parseFloat(line.getOptionValue("leading"));
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in leading, exception: " + exception);
         log.fine("Failed to parse leading, exception: " + exception);
         System.exit(1);
@@ -693,7 +693,7 @@ public class Parameters {
             Integer.parseInt(color.substring(0, 2), 16),
             Integer.parseInt(color.substring(2, 4), 16),
             Integer.parseInt(color.substring(4, 6), 16));
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in color string, exception: " + exception);
         log.fine("Failed to parse color string, exception: " + exception);
         System.exit(1);
@@ -703,7 +703,7 @@ public class Parameters {
     if (line.hasOption("text-x")) {
       try {
         textX = Math.abs(Float.parseFloat(line.getOptionValue("text-x")));
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in text x-position, exception: " + exception);
         log.fine("Failed to parse text x-position, exception: " + exception);
         System.exit(1);
@@ -714,7 +714,7 @@ public class Parameters {
     if (line.hasOption("text-y")) {
       try {
         textY = Math.abs(Float.parseFloat(line.getOptionValue("text-y")));
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in text y-position, exception: " + exception);
         log.fine("Failed to parse text y-position, exception: " + exception);
         System.exit(1);
@@ -741,7 +741,7 @@ public class Parameters {
     CommandLine line = null;
     try {
       line = parser.parse(options, args);
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       usage();
       log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);

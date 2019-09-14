@@ -123,20 +123,20 @@ public class PdfToXml {
       }
       element.addContent(string);
       return element;
-    } catch (Exception expected) { }
+    } catch (final Exception expected) { }
 
     if ((data.length > 2) && (data[0] == ((byte) 0xfe)) && (data[1] == ((byte) 0xff))) {
       try {
         element.addContent(new String(data, "UTF-16"));
         return element;
-      } catch (Exception expected) { }
+      } catch (final Exception expected) { }
     }
 
     if ((data.length > 3) && (data[0] == ((byte) 0xef)) && (data[1] == ((byte) 0xbb)) && (data[2] == ((byte) 0xbf))) {
       try {
         element.addContent(new String(data, "UTF-8"));
         return element;
-      } catch (Exception expected) { }
+      } catch (final Exception expected) { }
     }
 
     try {
@@ -184,7 +184,7 @@ public class PdfToXml {
       }
       element.addContent(string);
       return element;
-    } catch (Exception expected) { }
+    } catch (final Exception expected) { }
 
     try {
       final String string = new String(data, "ISO-8859-1");
@@ -196,7 +196,7 @@ public class PdfToXml {
       }
       element.addContent(string);
       return element;
-    } catch (Exception expected) { }
+    } catch (final Exception expected) { }
 
     element.setAttribute("format", "hex");
     for (byte b : data) {
@@ -329,7 +329,7 @@ public class PdfToXml {
     CommandLine line = null;
     try {
       line = parser.parse(options, args);
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       usage();
       log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
@@ -361,7 +361,7 @@ public class PdfToXml {
         log.fine("Too few or too many filenames");
         System.exit(1);
       }
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error opening files, exception: " + exception);
       log.fine("Error opening files, exception: " + exception);
       System.exit(1);
@@ -399,7 +399,7 @@ public class PdfToXml {
       pdfElement.addContent(contentElement);
 
       new XMLOutputter(Format.getRawFormat()).output(new Document(pdfElement), outPrintStream);
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
       log.fine("Error processing files, exception: " + exception);
       System.exit(1);

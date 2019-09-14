@@ -78,7 +78,7 @@ public class SignBoxPdf {
     try {
       inputData = Files.readAllBytes(Paths.get(parameters.getFileName(0)));
       outFileName = parameters.getFileName(parameters.numberFileNames() - 1);
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error opening files, exception: " + exception);
       log.fine("Error opening files, exception: " + exception);
       System.exit(1);
@@ -103,7 +103,7 @@ public class SignBoxPdf {
       pdfDocument.close();
       writer.close();
       reader.close();
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
       log.fine("Error processing files, exception: " + exception);
       System.exit(1);

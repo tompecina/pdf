@@ -220,7 +220,7 @@ public class Parameters {
     CommandLine line = null;
     try {
       line = parser.parse(options, args, true);
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       usage();
       log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
@@ -245,7 +245,7 @@ public class Parameters {
     if (line.hasOption("p")) {
       try {
         page = ((Number) line.getParsedOptionValue("p")).intValue();
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in page number, exception: " + exception);
         log.fine("Failed to parse page number, exception: " + exception);
         System.exit(1);
@@ -260,7 +260,7 @@ public class Parameters {
     if (line.hasOption("w")) {
       try {
         width = Float.parseFloat(line.getOptionValue("w"));
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in width, exception: " + exception);
         log.fine("Failed to parse width, exception: " + exception);
         System.exit(1);
@@ -275,7 +275,7 @@ public class Parameters {
     if (line.hasOption("h")) {
       try {
         height = Float.parseFloat(line.getOptionValue("h"));
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in height, exception: " + exception);
         log.fine("Failed to parse height, exception: " + exception);
         System.exit(1);

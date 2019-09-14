@@ -108,7 +108,7 @@ public class ReadPdfStream {
     CommandLine line = null;
     try {
       line = parser.parse(options, args);
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       usage();
       log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
@@ -159,7 +159,7 @@ public class ReadPdfStream {
         System.out.println();
       }
       System.out.print(new String(pdfStream.getBytes(), "utf-8"));
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
       log.fine("Error processing files, exception: " + exception);
       System.exit(1);

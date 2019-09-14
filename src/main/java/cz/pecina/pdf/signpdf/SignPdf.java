@@ -115,7 +115,7 @@ public class SignPdf {
       imageStream = new FileInputStream(imageFilename);
     }
     final Image image = (svg ? SvgConverter.convertToImage(imageStream, doc)
-                         : new Image(ImageDataFactory.create(imageStream.readAllBytes())));
+        : new Image(ImageDataFactory.create(imageStream.readAllBytes())));
     final float imageOrigWidth = image.getImageWidth();
     final float imageOrigHeight = image.getImageHeight();
     float imageWidth = par.getImageWidth();
@@ -209,7 +209,7 @@ public class SignPdf {
     try {
       inputData = Files.readAllBytes(Paths.get(par.getFileName(0)));
       outFileName = par.getFileName(par.numberFileNames() - 1);
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error opening files, exception: " + exception);
       log.fine("Error opening files, exception: " + exception);
       System.exit(1);
@@ -233,7 +233,7 @@ public class SignPdf {
       }
       key = (PrivateKey) keyStore.getKey(alias, par.getPassword());
       chain = keyStore.getCertificateChain(alias);
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error setting up cryptography, exception: " + exception);
       log.fine("Error setting up cryptography, exception: " + exception);
       System.exit(1);
@@ -276,7 +276,7 @@ public class SignPdf {
       }
       signer.signDetached(digest, signature, chain, null, null, null, SIGN_SIZE, PdfSigner.CryptoStandard.CMS);
       reader.close();
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
       log.fine("Error processing files, exception: " + exception);
       System.exit(1);

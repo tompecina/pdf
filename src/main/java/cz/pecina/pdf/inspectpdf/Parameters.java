@@ -133,7 +133,7 @@ public class Parameters {
     CommandLine line = null;
     try {
       line = parser.parse(options, args, true);
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       usage();
       log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);

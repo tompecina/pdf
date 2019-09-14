@@ -161,7 +161,7 @@ public class InspectPdf {
       if ((bytes.length > 2) && (bytes[0] == (byte) 0xfe) && (bytes[1] == (byte) 0xff)) {
         try {
           substr = PdfEncodings.convertToString(bytes, PdfEncodings.UNICODE_BIG);
-        } catch (IOException exception) {
+        } catch (final IOException exception) {
           substr = null;
         }
       } else {
@@ -177,7 +177,7 @@ public class InspectPdf {
         if ((score > 0) && (((score - bytes.length) <= (UNL_LIM * bytes.length)))) {
           try {
             substr = PdfEncodings.convertToString(bytes, PdfEncodings.PDF_DOC_ENCODING);
-          } catch (IOException exception) {
+          } catch (final IOException exception) {
             substr = null;
           }
         }
@@ -224,7 +224,7 @@ public class InspectPdf {
     try {
       provider = new BouncyCastleProvider();
       Security.addProvider(provider);
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error setting up cryptography, exception: " + exception);
       log.fine("Error setting up cryptography, exception: " + exception);
       System.exit(1);
@@ -296,7 +296,7 @@ public class InspectPdf {
           try {
             pkcs7 = util.readSignatureData(name);
             System.out.println("  Integrity check: " + yn(pkcs7.verifySignatureIntegrityAndAuthenticity()));
-          } catch (PdfException | GeneralSecurityException exception) {
+          } catch (final PdfException | GeneralSecurityException exception) {
             System.out.println("  Integrity check: " + yn(false));
             System.out.println();
             continue;
@@ -377,7 +377,7 @@ public class InspectPdf {
         }
       }
 
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
       log.fine("Error processing files, exception: " + exception);
       System.exit(1);

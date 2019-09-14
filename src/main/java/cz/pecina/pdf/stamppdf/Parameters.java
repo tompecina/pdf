@@ -22,14 +22,19 @@
 
 package cz.pecina.pdf.stamppdf;
 
+import cz.pecina.seqparser.CommandLine;
+import cz.pecina.seqparser.Option;
+import cz.pecina.seqparser.Options;
+import cz.pecina.seqparser.Parameter;
+import cz.pecina.seqparser.ParameterType;
+import cz.pecina.seqparser.ParseException;
+import cz.pecina.seqparser.SeqParser;
+import cz.pecina.seqparser.SubOption;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Logger;
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.DefaultParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
+import java.util.regex.Pattern;
 
 /**
  * Parse command line and extract parameters.
@@ -43,27 +48,181 @@ public class Parameters {
   private static final Logger log = Logger.getLogger(Parameters.class.getName());
 
   // options
-  private static final Options options = new Options();
+  private static final Options options = new Options().setSep(':');
 
   static {
-    options.addOption(
-        Option.builder("?")
-        .longOpt("help")
-        .desc("show usage information")
-        .build());
-    options.addOption(
-        Option.builder("V")
-        .longOpt("version")
-        .desc("show version")
-        .build());
-    options.addOption(
-        Option.builder("p")
-        .longOpt("page")
-        .hasArg()
-        .type(Number.class)
-        .argName("PAGE")
-        .desc("page number (default: 1)")
-        .build());
+    try {
+
+      options.addOption(new Option("ar", "arc", 6)
+          .addSubOption(ParameterType.Double)
+          );
+
+      options.addOption(new Option("c", "color", 1, 2)
+          .addSubOption(ParameterType.String)
+          );
+
+      options.addOption(new Option("cft", "curve-from-to", 4)
+          .addSubOption(ParameterType.Double)
+          );
+
+      options.addOption(new Option("ci", "circle", 3)
+          .addSubOption(ParameterType.Double)
+          );
+
+      options.addOption(new Option("cp", "close-path"));
+
+      options.addOption(new Option("cpefs", "close-path-eo-fill-stroke"));
+
+      options.addOption(new Option("cpfs", "close-path-fill-stroke"));
+
+      options.addOption(new Option("cps", "close-path-stroke"));
+
+      options.addOption(new Option("cs", "char-spacing", 1)
+          .addSubOption(ParameterType.Float)
+          );
+
+      options.addOption(new Option("ct", "curve-to", 4, 6)
+          .addSubOption(ParameterType.Double)
+          );
+
+      options.addOption(new Option("ef", "eo-fill"));
+
+      options.addOption(new Option("efs", "eo-fill-stroke"));
+
+      options.addOption(new Option("el", "ellipse", 4)
+          .addSubOption(ParameterType.Double)
+          );
+
+      options.addOption(new Option("ep", "end-path"));
+
+      options.addOption(new Option("f", "fill"));
+
+      options.addOption(new Option("fc", "fill-color", 1)
+          .addSubOption(ParameterType.String)
+          );
+
+      options.addOption(new Option("ff", "font-file", 1)
+          .addSubOption(ParameterType.String)
+          );
+
+      options.addOption(new Option("fs", "fill-stroke"));
+
+      options.addOption(new Option("hs", "horizontal-scaling", 1)
+          .addSubOption(ParameterType.PosFloat)
+          );
+
+      options.addOption(new Option("i", "image", 3)
+          .addSubOption(ParameterType.String)
+          .addSubOption(ParameterType.Float)
+          .addKwSubOption("w", ParameterType.Float)
+          .addKwSubOption("h", ParameterType.Float)
+          .addKwSubOption("c", ParameterType.String)
+          );
+
+      options.addOption(new Option("lc", "line-cap-style", 1)
+          .addSubOption(ParameterType.IntegerRange(0, 2))
+          );
+
+      options.addOption(new Option("ld", "line-dash", 1, Integer.MAX_VALUE)
+          .addSubOption(ParameterType.NonNegFloat)
+          );
+
+      options.addOption(new Option("le", "leading", 1)
+          .addSubOption(ParameterType.Float)
+          );
+
+      options.addOption(new Option("lj", "line-join-style", 1)
+          .addSubOption(ParameterType.IntegerRange(0, 2))
+          );
+
+      options.addOption(new Option("lt", "line-to", 2)
+          .addSubOption(ParameterType.Double)
+          );
+
+      options.addOption(new Option("lw", "line-width", 1)
+          .addSubOption(ParameterType.NonNegFloat)
+          );
+
+      options.addOption(new Option("ml", "miter-limit", 1)
+          .addSubOption(ParameterType.NonNegFloat)
+          );
+
+      options.addOption(new Option("mt", "move-to", 2)
+          .addSubOption(ParameterType.Double)
+          );
+
+      options.addOption(new Option("p", "pages", 1, Integer.MAX_VALUE)
+          .addSubOption(ParameterType.String)
+          );
+
+      options.addOption(new Option("ps", "font-size", 1)
+          .addSubOption(ParameterType.PosFloat)
+          );
+
+      options.addOption(new Option("re", "rectangle", 4)
+          .addSubOption(ParameterType.Double)
+          .addSubOption(ParameterType.Double)
+          .addSubOption(ParameterType.NonNegDouble)
+          .addKwSubOption("c", ParameterType.String)
+          );
+
+      options.addOption(new Option("rm", "text-rendering-mode", 1)
+          .addSubOption(ParameterType.IntegerRange(0, 7))
+          );
+
+      options.addOption(new Option("rr", "round-rectangle", 5)
+          .addSubOption(ParameterType.Double)
+          .addSubOption(ParameterType.Double)
+          .addSubOption(ParameterType.NonNegDouble)
+          .addKwSubOption("c", ParameterType.String)
+          );
+
+      options.addOption(new Option("s", "stroke"));
+
+      options.addOption(new Option("sc", "stroke-color", 1)
+          .addSubOption(ParameterType.String)
+          );
+
+      options.addOption(new Option("t", "text", 1, 3)
+          .addSubOption(ParameterType.String)
+          .addSubOption(ParameterType.Float)
+          .addKwSubOption("ff", ParameterType.String)
+          .addKwSubOption("ps", ParameterType.PosFloat)
+          .addKwSubOption("le", ParameterType.Float)
+          .addKwSubOption("cs", ParameterType.Float)
+          .addKwSubOption("ws", ParameterType.Float)
+          .addKwSubOption("tr", ParameterType.Float)
+          .addKwSubOption("rm", ParameterType.NonNegInteger)
+          .addKwSubOption("hs", ParameterType.Float)
+          .addKwSubOption("fc", ParameterType.String)
+          .addKwSubOption("sc", ParameterType.String)
+          .addKwSubOption("lw", ParameterType.NonNegFloat)
+          );
+
+      options.addOption(new Option("tm", "text-matrix", 6)
+          .addSubOption(ParameterType.Float)
+          );
+
+      options.addOption(new Option("tp", "text-pos", 2)
+          .addSubOption(ParameterType.Float)
+          );
+
+      options.addOption(new Option("tr", "text-rise", 1)
+          .addSubOption(ParameterType.Float)
+          );
+
+      options.addOption(new Option("ws", "word-spacing", 1)
+          .addSubOption(ParameterType.Float)
+          );
+
+      options.addOption(new Option("x", "literal", 1)
+          .addSubOption(ParameterType.String)
+          );
+
+    } catch (final ParseException exception) {
+      log.fine("Error in options: " + exception.getMessage());
+      System.exit(1);
+    }
   }
 
   // for description see Object
@@ -77,55 +236,20 @@ public class Parameters {
    *
    */
   public void usage() {
-    final HelpFormatter helpFormatter = new HelpFormatter();
-    helpFormatter.printHelp("stamppdf [options] x y text infile [outfile]", options);
-    System.out.println("\nNotes:");
-    System.out.println("  - Negative values of x/y mean offset from the right/top page margin");
-    System.out.println("  - Character ^ in text is replaced with a newline");
-    System.out.println("\nThe source code is available from <https://github.com/tompecina/pdf>.");
+    System.out.println("Help text");
   }
 
   // parsed parameters
-  private int pageNum = 1;
-  private float xOffset;
-  private float yOffset;
-  private String text;
+  private List<Parameter> parameters;
   private String[] fileNames;
 
   /**
-   * Gets the page number.
+   * Gets the parameters.
    *
-   * @return page number
+   * @return the parameters
    */
-  public int getPageNum() {
-    return pageNum;
-  }
-
-  /**
-   * Gets the x offset.
-   *
-   * @return x offset
-   */
-  public float getXOffset() {
-    return xOffset;
-  }
-
-  /**
-   * Gets the y offset.
-   *
-   * @return y offset
-   */
-  public float getYOffset() {
-    return yOffset;
-  }
-
-  /**
-   * Gets the text.
-   *
-   * @return text
-   */
-  public String getText() {
-    return text;
+  public List<Parameter> getParameters() {
+    return parameters;
   }
 
   /**
@@ -164,46 +288,44 @@ public class Parameters {
   public Parameters(final String[] args) {
     log.fine("Parameters started");
 
-    if ((args == null) || (args.length < 1)) {
+    if ((args == null) || (args.length == 0)) {
       usage();
       log.fine("Error in parameters");
       System.exit(1);
     }
 
-    final CommandLineParser parser = new DefaultParser();
-    CommandLine line = null;
-    try {
-      line = parser.parse(options, args, true);
-    } catch (Exception exception) {
-      usage();
-      log.fine("Failed to parse the command line, exception: " + exception);
-      System.exit(1);
-    }
-
-    if (line.hasOption("?")) {
+    if (args[0].equals("-?") || args[0].equals("--help")) {
       usage();
       log.fine("Application terminated normally");
       System.exit(0);
     }
 
-    if (line.hasOption("V")) {
+    if (args[0].equals("-V") || args[0].equals("--version")) {
       System.err.println("1.0.0");
       log.fine("Application terminated normally");
       System.exit(0);
     }
 
-    final String[] remArgs = line.getArgs();
+    CommandLine line = null;
+    try {
+      line = SeqParser.parse(options, args, true);
+    } catch (final Exception exception) {
+      System.err.println("Failed to parse the command line, exception: " + exception);
+      usage();
+      log.fine("Failed to parse the command line, exception: " + exception);
+      System.exit(1);
+    }
 
-    if ((remArgs.length < 4) || (remArgs.length > 5)) {
+    fileNames = new String[line.getRemArgs().size()];
+    fileNames = line.getRemArgs().toArray(fileNames);
+    final int fnLen = fileNames.length;
+    if ((fnLen < 1) || (fnLen > 2)) {
       usage();
       log.fine("Error in parameters");
       System.exit(1);
     }
 
-    xOffset = Float.parseFloat(remArgs[0]);
-    yOffset = Float.parseFloat(remArgs[1]);
-    text = remArgs[2];
-    fileNames = Arrays.copyOfRange(remArgs, 3, remArgs.length);
+    parameters = line.getParameters();
 
     log.fine("Parameters set up");
   }

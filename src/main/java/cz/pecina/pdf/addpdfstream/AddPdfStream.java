@@ -133,7 +133,7 @@ public class AddPdfStream {
     CommandLine line = null;
     try {
       line = parser.parse(options, args);
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       usage();
       log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
@@ -160,9 +160,9 @@ public class AddPdfStream {
           final String[] pair = pairString.split(":");
           pairs.put(pair[0], pair[1]);
         }
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in dictionary pairs, exception: " + exception);
-        log.fine("FFailed to parse dictionary pairs, exception: " + exception);
+        log.fine("Failed to parse dictionary pairs, exception: " + exception);
         System.exit(1);
       }
     }
@@ -172,7 +172,7 @@ public class AddPdfStream {
     if (line.hasOption("l")) {
       try {
         compressionLevel = ((Number) line.getParsedOptionValue("l")).intValue();
-      } catch (Exception exception) {
+      } catch (final Exception exception) {
         System.err.println("Error in compression level, exception: " + exception);
         log.fine("Failed to parse compression level, exception: " + exception);
         System.exit(1);
@@ -204,7 +204,7 @@ public class AddPdfStream {
     try {
       inputData = Files.readAllBytes(Paths.get(fileNames[0]));
       outFileName = fileNames[(fileNames.length == 2) ? 0 : 2];
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error opening files, exception: " + exception);
       log.fine("Error opening files, exception: " + exception);
       System.exit(1);
@@ -230,7 +230,7 @@ public class AddPdfStream {
       pdfDocument.close();
       writer.close();
       reader.close();
-    } catch (Exception exception) {
+    } catch (final Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
       log.fine("Error processing files, exception: " + exception);
       System.exit(1);
