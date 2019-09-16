@@ -259,7 +259,7 @@ public class Parameters {
 
     if (line.hasOption("w")) {
       try {
-        width = Float.parseFloat(line.getOptionValue("w"));
+        width = Float.valueOf(line.getOptionValue("w"));
       } catch (final Exception exception) {
         System.err.println("Error in width, exception: " + exception);
         log.fine("Failed to parse width, exception: " + exception);
@@ -274,7 +274,7 @@ public class Parameters {
 
     if (line.hasOption("h")) {
       try {
-        height = Float.parseFloat(line.getOptionValue("h"));
+        height = Float.valueOf(line.getOptionValue("h"));
       } catch (final Exception exception) {
         System.err.println("Error in height, exception: " + exception);
         log.fine("Failed to parse height, exception: " + exception);
@@ -295,8 +295,8 @@ public class Parameters {
       System.exit(1);
     }
 
-    xOffset = Float.parseFloat(remArgs[0]);
-    yOffset = Float.parseFloat(remArgs[1]);
+    xOffset = Float.valueOf(remArgs[0]);
+    yOffset = Float.valueOf(remArgs[1]);
     fileNames = Arrays.copyOfRange(remArgs, 2, remArgs.length);
 
     log.fine("Parameters set up");

@@ -33,7 +33,6 @@ import com.itextpdf.kernel.font.PdfFont;
 import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.geom.Rectangle;
 import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.kernel.pdf.PdfName;
 import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
@@ -46,7 +45,9 @@ import cz.pecina.seqparser.Parameter;
 import cz.pecina.seqparser.SubParameter;
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -91,71 +92,707 @@ public class StampPdf {
   private static final int DEFAULT_TEXT_RENDERING_MODE = 0;
   private static final float DEFAULT_TEXT_HORIZONTAL_SCALING = 100f;
 
-  // general drawing parameters
-  private static class GenPar implements Cloneable {
-
-    // color parameters
-    public Color fillColor = DEFAULT_FILL_COLOR;
-    public Color strokeColor = DEFAULT_STROKE_COLOR;
-
-    // drawing parameters
-    public float lineWidth = DEFAULT_LINE_WIDTH;
-
-    // for description see Object
-    @Override
-    public GenPar clone() {
-      try {
-        return (GenPar) super.clone();
-      } catch (final CloneNotSupportedException exception) {
-        error("Error during cloning: " + exception.getMessage());
-        return null;
-      }
-    }
-  }
-
   // font parameters
-  private static class FontPar implements Cloneable {
+  private String fontFilename = DEFAULT_FONT_FILENAME;
+  private float fontSize = DEFAULT_FONT_SIZE;
+  private float leading = DEFAULT_LEADING;
+  private float characterSpacing = DEFAULT_CHARACTER_SPACING;
+  private float wordSpacing = DEFAULT_WORD_SPACING;
+  private float textRise = DEFAULT_TEXT_RISE;
+  private int textRenderingMode = DEFAULT_TEXT_RENDERING_MODE;
+  private float horizontalScaling = DEFAULT_TEXT_HORIZONTAL_SCALING;
 
-    // font parameters
-    public String fontFilename = DEFAULT_FONT_FILENAME;
-    public float fontSize = DEFAULT_FONT_SIZE;
-    public float leading = DEFAULT_LEADING;
-    public float characterSpacing = DEFAULT_CHARACTER_SPACING;
-    public float wordSpacing = DEFAULT_WORD_SPACING;
-    public float textRise = DEFAULT_TEXT_RISE;
-    public int textRenderingMode = DEFAULT_TEXT_RENDERING_MODE;
-    public float horizontalScaling = DEFAULT_TEXT_HORIZONTAL_SCALING;
+  // other fields
+  private Parameters par;
+  private PdfDocument doc;
+  private int numPages;
+  private boolean[] pageNums;
+  private Map<String, PdfXObject> images = new HashMap<>();
+  private Map<String, FontProgram> fontPrograms = new HashMap<>();
+  private Map<String, PdfFont> fonts = new HashMap<>();
+  private List<List<Parameter>> cmds = new ArrayList<>();
+  private Parameter cmd;
+  private SubParameter subParameter;
+  private PdfCanvas canvas;
+  private float pageWidth;
+  private float pageHeight;
+  private boolean textBegun = false;
 
-    // for description see Object
-    @Override
-    public FontPar clone() {
-      try {
-        return (FontPar) super.clone();
-      } catch (final CloneNotSupportedException exception) {
-        error("Error during cloning: " + exception.getMessage());
-        return null;
-      }
-    }
-  }
-
-  // report error and exit
-  private static void error(final String message) {
+  /**
+   * Reports error and exits.
+   *
+   * @param message the error message to be logged and sent to stderr
+   */
+  protected static void error(final String message) {
     log.fine(message);
     System.err.println(message);
     System.exit(1);
   }
 
-  // make array of double sub-parameters
-  private static double[] makeArrDouble(final int num, final Parameter par, final String message) {
+  /**
+   * Adjusts x-type parameter.
+   *
+   * @param sub the sub-parameter containing the value
+   * @return the adjusted x-coordinate
+   */
+  protected float adjustXFloat(final SubParameter sub) {
+    float res = sub.getAsFloat();
+    if (sub.getAsString().startsWith("-")) {
+      res += pageWidth;
+    }
+    return res;
+  }
+
+  /**
+   * Adjusts y-type parameter.
+   *
+   * @param sub the sub-parameter containing the value
+   * @return the adjusted y-coordinate
+   */
+  protected float adjustYFloat(final SubParameter sub) {
+    float res = sub.getAsFloat();
+    if (sub.getAsString().startsWith("-")) {
+      res += pageHeight;
+    }
+    return res;
+  }
+
+  /**
+   * Adjusts x-type parameter.
+   *
+   * @param sub the sub-parameter containing the value
+   * @return the adjusted x-coordinate
+   */
+  protected double adjustXDouble(final SubParameter sub) {
+    double res = sub.getAsDouble();
+    if (sub.getAsString().startsWith("-")) {
+      res += pageWidth;
+    }
+    return res;
+  }
+
+  /**
+   * Adjusts y-type parameter.
+   *
+   * @param sub the sub-parameter containing the value
+   * @return the adjusted y-coordinate
+   */
+  protected double adjustYDouble(final SubParameter sub) {
+    double res = sub.getAsDouble();
+    if (sub.getAsString().startsWith("-")) {
+      res += pageHeight;
+    }
+    return res;
+  }
+
+  /**
+   * Adjusts the rectangle's position according to the reference corner.
+   *
+   * @param arr the rectagle array (llx, lly, width, height)
+   */
+  protected void adjustCorner(final float[] arr) {
+    final SubParameter corner = cmd.getKwSubParameter("c");
+    if (corner != null) {
+      switch (corner.getAsString()) {
+        case "ll": {
+          break;
+        }
+        case "lr": {
+          arr[0] -= arr[2];
+          break;
+        }
+        case "ul": {
+          arr[1] -= arr[3];
+          break;
+        }
+        case "ur": {
+          arr[0] -= arr[2];
+          arr[1] -= arr[3];
+          break;
+        }
+        default: {
+          error("Invalid corner");
+        }
+      }
+    }
+  }
+
+  /**
+   * Adjusts the rectangle's position according to the reference corner.
+   *
+   * @param arr the rectagle array (llx, lly, width, height)
+   */
+  protected void adjustCorner(final double[] arr) {
+    final SubParameter corner = cmd.getKwSubParameter("c");
+    if (corner != null) {
+      switch (corner.getAsString()) {
+        case "ll": {
+          break;
+        }
+        case "lr": {
+          arr[0] -= arr[2];
+          break;
+        }
+        case "ul": {
+          arr[1] -= arr[3];
+          break;
+        }
+        case "ur": {
+          arr[0] -= arr[2];
+          arr[1] -= arr[3];
+          break;
+        }
+        default: {
+          error("Invalid corner");
+        }
+      }
+    }
+  }
+
+  /**
+   * Extracts an array of double sub-parameters.
+   *
+   * @param num the number of parameters to be extracted from the sub-parameters
+   * @param message the error message
+   * @return the array of extracted parameters
+   */
+  protected double[] extractArr(final int num, final String message) {
+    return extractArr(num, message, new int[0], new int[0]);
+  }
+
+  /**
+   * Extracts an array of double sub-parameters, adjusting x- and y-coordinates as needed.
+   *
+   * @param num the number of parameters to be extracted from the sub-parameters
+   * @param message the error message
+   * @param parX list of sub-parameter indices for application of x-adjustment
+   * @param parY list of sub-parameter indices for application of y-adjustment
+   * @return the array of extracted parameters
+   */
+  protected double[] extractArr(final int num, final String message, final int[] parX, final int[] parY) {
     final double[] res = new double[num];
     for (int i = 0; i < num; i++) {
-      final SubParameter sub = par.getSubParameter(i);
+      final SubParameter sub = cmd.getSubParameter(i);
       if (sub == null) {
         error(message);
       }
       res[i] = sub.getAsDouble();
     }
+    for (int i : parX) {
+      final SubParameter sub = cmd.getSubParameter(i);
+      if (sub.getAsString().startsWith("-")) {
+        res[i] += pageWidth;
+      }
+    }
+    for (int i : parY) {
+      final SubParameter sub = cmd.getSubParameter(i);
+      if (sub.getAsString().startsWith("-")) {
+        res[i] += pageHeight;
+      }
+    }
     return res;
+  }
+
+  // first parsing pass
+  private void pass1() throws FileNotFoundException, IOException {
+
+    for (Parameter tempCmd : par.getParameters()) {
+      cmd = tempCmd;
+
+      final String name = cmd.getOption().getName();
+
+      switch (name) {
+
+        case "pages": {
+          Arrays.fill(pageNums, false);
+          for (SubParameter sub : cmd.getSubParameters()) {
+            final String[] range = sub.getAsString().split("-", 2);
+            if (range.length == 1) {
+              final int num = Integer.valueOf(range[0]);
+              if ((num < 1) || (num >= numPages)) {
+                error("Invalid page number: " + range[0]);
+              }
+              pageNums[num - 1] = true;
+            } else {
+              final int from = (range[0].length() == 0) ? 1 : Integer.valueOf(range[0]);
+              final int to = (range[1].length() == 0) ? numPages : Integer.valueOf(range[1]);
+              if (from > to) {
+                error("Invalid range of page numbers: " + sub.getAsString());
+              }
+              for (int pageNum = from; pageNum <= to; pageNum++) {
+                pageNums[pageNum - 1] = true;
+              }
+            }
+          }
+          break;
+        }
+
+        default: {
+
+          switch (name) {
+
+            case "image": {
+              final String imageFilename = cmd.getSubParameter(0).getAsString();
+              final Image image = imageFilename.toLowerCase().endsWith(".svg")
+                  ? SvgConverter.convertToImage(new FileInputStream(imageFilename), doc)
+                  : new Image(ImageDataFactory.create(imageFilename));
+              images.put(imageFilename, image.getXObject());
+              break;
+            }
+
+            case "font-file": {
+              final String font = cmd.getSubParameter(0).getAsString();
+              try {
+                fontPrograms.put(font, FontProgramFactory.createFont(font));
+              } catch (final Exception exception) {
+                error("Failed to process font: " + font);
+              }
+              break;
+            }
+
+            case "text": {
+              final SubParameter sub = cmd.getKwSubParameter("ff");
+              if (sub != null) {
+                final String font = sub.getAsString();
+                try {
+                  fontPrograms.put(font, FontProgramFactory.createFont(font));
+                } catch (final Exception exception) {
+                  error("Failed to process font: " + font);
+                }
+              }
+              break;
+            }
+
+            default: {
+              // no action
+            }
+          }
+
+          for (int pageNum = 0; pageNum < numPages; pageNum++) {
+            if (pageNums[pageNum]) {
+              cmds.get(pageNum).add(cmd);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // parse image
+  private void parseImage() {
+
+    final String imageFilename = (String) cmd.getSubParameter(0).getAsString();
+    final PdfXObject image = images.get(imageFilename);
+    final float imageOrigWidth = image.getWidth();
+    final float imageOrigHeight = image.getHeight();
+    final SubParameter width = cmd.getKwSubParameter("w");
+    final float[] arr = new float[4];
+    arr[2] = ((width == null) || width.isEmpty()) ? 0f : width.getAsFloat();
+    final SubParameter height = cmd.getKwSubParameter("h");
+    arr[3] = ((height == null) || height.isEmpty()) ? 0f : height.getAsFloat();
+    float imageScaleX = 1f;
+    float imageScaleY = 1f;
+    if ((arr[2] > 0f) && (arr[3] > 0f)) {
+      imageScaleX = arr[2] / imageOrigWidth;
+      imageScaleY = arr[3] / imageOrigHeight;
+    } else if (arr[2] > 0f) {
+      imageScaleX = arr[2] / imageOrigWidth;
+      imageScaleY = imageScaleX;
+      arr[3] = imageOrigHeight * imageScaleY;
+    } else if (arr[3] > 0f) {
+      imageScaleX = arr[3] / imageOrigHeight;
+      imageScaleY = imageScaleX;
+      arr[2] = imageOrigWidth * imageScaleX;
+    } else {
+      arr[2] = imageOrigWidth;
+      arr[3] = imageOrigHeight;
+    }
+    if (!imageFilename.toLowerCase().endsWith(".svg")) {
+      imageScaleX = arr[2];
+      imageScaleY = arr[3];
+    }
+    final SubParameter posX = cmd.getSubParameter(1);
+    final SubParameter posY = cmd.getSubParameter(2);
+    if ((posX.isEmpty()) || posY.isEmpty()) {
+      error("Invalid image position");
+    }
+    arr[0] = adjustXFloat(posX);
+    arr[2] = adjustYFloat(posY);
+    adjustCorner(arr);
+    canvas.addXObject(image, new Rectangle(arr[0], arr[1], imageScaleX, imageScaleY));
+  }
+
+  // parse text
+  private void parseText(final int pageNum) {
+
+    String tempFontFilename = fontFilename;
+    float tempFontSize = fontSize;
+
+    canvas.saveState();
+
+    if (!textBegun) {
+      canvas.beginText();
+      textBegun = true;
+    }
+
+    canvas.setCharacterSpacing(cmd.hasKwSubParameter("cs") ? cmd.getKwSubParameter("cs").getAsFloat() : characterSpacing);
+    if (cmd.hasKwSubParameter("fc")) {
+      canvas.setFillColor(WebColors.getRGBColor(cmd.getKwSubParameter("fc").getAsString()));
+    }
+    if (cmd.hasKwSubParameter("ff")) {
+      tempFontFilename = cmd.getKwSubParameter("ff").getAsString();
+    }
+    canvas.setHorizontalScaling(cmd.hasKwSubParameter("hs") ? cmd.getKwSubParameter("hs").getAsFloat() : horizontalScaling);
+    canvas.setLeading(cmd.hasKwSubParameter("le") ? cmd.getKwSubParameter("le").getAsFloat() : leading);
+    if (cmd.hasKwSubParameter("lw")) {
+      canvas.setLineWidth(cmd.getKwSubParameter("lw").getAsFloat());
+    }
+    if (cmd.hasKwSubParameter("ps")) {
+      tempFontSize = cmd.getKwSubParameter("ps").getAsFloat();
+    }
+    canvas.setTextRenderingMode(cmd.hasKwSubParameter("rm") ? cmd.getKwSubParameter("rm").getAsInt() : textRenderingMode);
+    if (cmd.hasKwSubParameter("sc")) {
+      canvas.setStrokeColor(WebColors.getRGBColor(cmd.getKwSubParameter("sc").getAsString()));
+    }
+    canvas.setTextRise(cmd.hasKwSubParameter("tr") ? cmd.getKwSubParameter("tr").getAsFloat() : textRise);
+    canvas.setWordSpacing(cmd.hasKwSubParameter("ws") ? cmd.getKwSubParameter("ws").getAsFloat() : wordSpacing);
+
+    canvas.setFontAndSize(fonts.get(tempFontFilename), tempFontSize);
+
+    final int numSubPar = cmd.getNumSubParameters();
+    if (numSubPar == 3) {
+      final SubParameter subX = cmd.getSubParameter(1);
+      final SubParameter subY = cmd.getSubParameter(2);
+      if ((subX == null) || (subY == null)) {
+        error("Invalid text position");
+      }
+      final float textX = adjustXFloat(subX);
+      final float textY = adjustYFloat(subY);
+      canvas.setTextMatrix(textX, textY);
+    } else if (numSubPar != 1) {
+      error("Invalid text position parameters");
+    }
+    String text = cmd.getSubParameter(0).getAsString();
+    text = text.replace("{page}", "" + (pageNum + 1));
+    text = text.replace("{pages}", "" + numPages);
+    final String inputFilename = par.getFileName(0);
+    text = text.replace("{pathname}", inputFilename);
+    final String[] parts = inputFilename.split(".+?/(?=[^/]+$)");
+    text = text.replace("{filename}", parts[parts.length - 1]);
+    final String[] lines = text.split("\\^");
+    canvas.showText(lines[0]);
+    for (int i = 1; i < lines.length; i++) {
+      canvas.newlineShowText(lines[i]);
+    }
+
+    canvas.restoreState();
+  }
+
+  // second parsing pass
+  @SuppressWarnings("checkstyle:MethodLength")
+  private void pass2() throws IOException {
+
+    for (int pageNum = 0; pageNum < numPages; pageNum++) {
+
+      if (!cmds.get(pageNum).isEmpty()) {
+
+        final PdfPage page = doc.getPage(pageNum + 1);
+        pageWidth = page.getPageSize().getWidth();
+        pageHeight = page.getPageSize().getHeight();
+        canvas = new PdfCanvas(page, true);
+
+        canvas.saveState();
+
+        fonts.clear();
+        fonts.put(DEFAULT_FONT_FILENAME, PdfFontFactory.createFont(DEFAULT_FONT_FILENAME, PdfEncodings.IDENTITY_H, true));
+        for (String name : fontPrograms.keySet()) {
+          if (!fonts.containsKey(name)) {
+            fonts.put(name, PdfFontFactory.createFont(name, PdfEncodings.IDENTITY_H, true));
+          }
+        }
+
+        for (Parameter tempCmd : cmds.get(pageNum)) {
+          cmd = tempCmd;
+
+          switch (cmd.getOption().getName()) {
+
+            case "arc": {
+              final double[] arr = extractArr(6, "Invalid arc parameters", new int[] {0, 2}, new int[] {1, 3});
+              canvas.arc(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
+              break;
+            }
+
+            case "char-spacing": {
+              characterSpacing = cmd.getSubParameter(0).getAsFloat();
+              break;
+            }
+
+            case "circle": {
+              final double[] arr = extractArr(3, "Invalid circle parameters", new int[] {0}, new int[] {1});
+              canvas.circle(arr[0], arr[1], arr[2]);
+              break;
+            }
+
+            case "close-path": {
+              canvas.closePath();
+              break;
+            }
+
+            case "close-path-eo-fill-stroke": {
+              canvas.closePathEoFillStroke();
+              break;
+            }
+
+            case "close-path-fill-stroke": {
+              canvas.closePathFillStroke();
+              break;
+            }
+
+            case "close-path-stroke": {
+              canvas.closePathStroke();
+              break;
+            }
+
+            case "color": {
+              canvas.setFillColor(WebColors.getRGBColor(cmd.getSubParameter(0).getAsString()));
+              canvas.setStrokeColor(WebColors.getRGBColor(cmd.getSubParameter(cmd.getNumSubParameters() - 1).getAsString()));
+              break;
+            }
+
+            case "curve-from-to": {
+              final double[] arr = extractArr(4, "Invalid Bézier curve parameters", new int[] {0, 2}, new int[] {1, 3});
+              canvas.curveFromTo(arr[0], arr[1], arr[2], arr[3]);
+              break;
+            }
+
+            case "curve-to": {
+              final int numPar = cmd.getNumSubParameters();
+              switch (numPar) {
+                case 4: {
+                  final double[] arr =
+                      extractArr(numPar, "Invalid Bézier curve parameters", new int[] {0, 2}, new int[] {1, 3});
+                  canvas.curveTo(arr[0], arr[1], arr[2], arr[3]);
+                  break;
+                }
+                case 6: {
+                  final double[] arr =
+                      extractArr(numPar, "Invalid Bézier curve parameters", new int[] {0, 2, 4}, new int[] {1, 3, 5});
+                  canvas.curveTo(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
+                  break;
+                }
+                default: {
+                  error("Invalid number of Bézier curve parameters");
+                }
+              }
+              break;
+            }
+
+            case "ellipse": {
+              final double[] arr = extractArr(4, "Invalid ellipse parameters", new int[] {0, 2}, new int[] {1, 3});
+              canvas.ellipse(arr[0], arr[1], arr[2], arr[3]);
+              break;
+            }
+
+            case "end-path": {
+              canvas.endPath();
+              break;
+            }
+
+            case "eo-fill": {
+              canvas.eoFill();
+              break;
+            }
+
+            case "eo-fill-stroke": {
+              canvas.eoFillStroke();
+              break;
+            }
+
+            case "fill": {
+              canvas.fill();
+              break;
+            }
+
+            case "fill-color": {
+              canvas.setFillColor(WebColors.getRGBColor(cmd.getSubParameter(0).getAsString()));
+              break;
+            }
+
+            case "fill-stroke": {
+              canvas.fillStroke();
+              break;
+            }
+
+            case "font-file": {
+              fontFilename = cmd.getSubParameter(0).getAsString();
+              break;
+            }
+
+            case "font-size": {
+              fontSize = cmd.getSubParameter(0).getAsFloat();
+              break;
+            }
+
+            case "image": {
+              parseImage();
+              break;
+            }
+
+            case "line-to": {
+              final double[] arr = extractArr(2, "Invalid line parameters", new int[] {0}, new int[] {1});
+              canvas.lineTo(arr[0], arr[1]);
+              break;
+            }
+
+            case "leading": {
+              leading = cmd.getSubParameter(0).getAsFloat();
+              break;
+            }
+
+            case "line-cap-style": {
+              canvas.setLineCapStyle(cmd.getSubParameter(0).getAsInt());
+              break;
+            }
+
+            case "line-dash": {
+              int numPar = cmd.getNumSubParameters();
+              final float phase = cmd.getSubParameter(--numPar).getAsFloat();
+              final float[] pattern = new float[numPar];
+              for (int i = 0; i < numPar; i++) {
+                pattern[i] = cmd.getSubParameter(i).getAsFloat();
+              }
+              canvas.setLineDash(pattern, phase);
+              break;
+            }
+
+            case "line-join-style": {
+              canvas.setLineJoinStyle(cmd.getSubParameter(0).getAsInt());
+              break;
+            }
+
+            case "line-width": {
+              canvas.setLineWidth(cmd.getSubParameter(0).getAsFloat());
+              break;
+            }
+
+            case "literal": {
+              final SubParameter sub = cmd.getSubParameter(0);
+              if (sub == null) {
+                error("Empty literal");
+              }
+              canvas.writeLiteral(sub.getAsString());
+              break;
+            }
+
+            case "miter-limit": {
+              canvas.setMiterLimit(cmd.getSubParameter(0).getAsFloat());
+              break;
+            }
+
+            case "move-to": {
+              final double[] arr = extractArr(2, "Invalid position parameters", new int[] {0}, new int[] {1});
+              canvas.moveTo(arr[0], arr[1]);
+              break;
+            }
+
+            case "rectangle": {
+              final double[] arr = extractArr(4, "Invalid rectangle parameters", new int[] {0}, new int[] {1});
+              adjustCorner(arr);
+              canvas.rectangle(arr[0], arr[1], arr[2], arr[3]);
+              break;
+            }
+
+            case "round-rectangle": {
+              final double[] arr = extractArr(5, "Invalid round rectangle parameters", new int[] {0}, new int[] {1});
+              adjustCorner(arr);
+              canvas.roundRectangle(arr[0], arr[1], arr[2], arr[3], arr[4]);
+              break;
+            }
+
+            case "stroke": {
+              canvas.stroke();
+              break;
+            }
+
+            case "stroke-color": {
+              canvas.setStrokeColor(WebColors.getRGBColor(cmd.getSubParameter(0).getAsString()));
+              break;
+            }
+
+            case "text": {
+              parseText(pageNum);
+              break;
+            }
+
+            case "text-horizontal-scaling": {
+              horizontalScaling = cmd.getSubParameter(0).getAsFloat();
+              break;
+            }
+
+            case "text-matrix": {
+              if (!textBegun) {
+                canvas.beginText();
+                textBegun = true;
+              }
+              final float[] matrix = new float[6];
+              for (int i = 0; i < 6; i++) {
+                final SubParameter sub = cmd.getSubParameter(i);
+                if (sub == null) {
+                  error("Invalid text matrix");
+                }
+                matrix[i] = sub.getAsFloat();
+              }
+              canvas.setTextMatrix(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
+              break;
+            }
+
+            case "text-pos": {
+              if (!textBegun) {
+                canvas.beginText();
+                textBegun = true;
+              }
+              final SubParameter subX = cmd.getSubParameter(0);
+              final SubParameter subY = cmd.getSubParameter(1);
+              if ((subX == null) || (subY == null)) {
+                error("Invalid text position");
+              }
+              final float textX = adjustXFloat(subX);
+              final float textY = adjustXFloat(subY);
+              canvas.setTextMatrix(textX, textY);
+              break;
+            }
+
+            case "text-rendering-mode": {
+              textRenderingMode = cmd.getSubParameter(0).getAsInt();
+              break;
+            }
+
+            case "text-rise": {
+              textRise = cmd.getSubParameter(0).getAsFloat();
+              break;
+            }
+
+            case "word-spacing": {
+              wordSpacing = cmd.getSubParameter(0).getAsFloat();
+              break;
+            }
+
+            default: {
+              // no action
+            }
+
+          }
+        }
+
+        if (textBegun) {
+          canvas.endText();
+          textBegun = true;
+        }
+
+        canvas.restoreState();
+        canvas.release();
+      }
+    }
   }
 
   /**
@@ -164,9 +801,18 @@ public class StampPdf {
    * @param args command-line arguments
    */
   public static void main(final String[] args) {
+    new StampPdf(args);
+  }
+
+  /**
+   * Main constructor.
+   *
+   * @param args command-line arguments
+   */
+  public StampPdf(final String[] args) {
     log.fine("Application started");
 
-    final Parameters par = new Parameters(args);
+    par = new Parameters(args);
 
     byte[] inputData = null;
     String outFileName = null;
@@ -179,622 +825,31 @@ public class StampPdf {
     }
 
     try {
+
       final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
       final StampingProperties prop = new StampingProperties().preserveEncryption().useAppendMode();
       final PdfWriter writer = new PdfWriter(new FileOutputStream(outFileName));
-      final PdfDocument doc = new PdfDocument(reader, writer, prop);
-      final int numPages = doc.getNumberOfPages();
-      final boolean[] pageNums = new boolean[numPages];
+      doc = new PdfDocument(reader, writer, prop);
+      numPages = doc.getNumberOfPages();
+      pageNums = new boolean[numPages];
       pageNums[0] = true;
-      final List<List<Parameter>> commands = new ArrayList<>();
       for (int pageNum = 0; pageNum < numPages; pageNum++) {
-        commands.add(new ArrayList<Parameter>());
-      }
-      final Map<String, PdfXObject> images = new HashMap<>();
-      final Map<String, FontProgram> fontPrograms = new HashMap<>();
-
-      for (Parameter command: par.getParameters()) {
-        final String name = command.getOption().getName();
-
-        switch (name) {
-
-          case "pages": {
-            Arrays.fill(pageNums, false);
-            for (SubParameter sub: command.getSubParameters()) {
-              final String[] range = sub.getAsString().split("-", 2);
-              if (range.length == 1) {
-                final int num = Integer.parseInt(range[0]);
-                if ((num < 1) || (num >= numPages)) {
-                  error("Invalid page number: " + range[0]);
-                }
-                pageNums[num - 1] = true;
-              } else {
-                final int from = (range[0].length() == 0) ? 1 : Integer.parseInt(range[0]);
-                final int to = (range[1].length() == 0) ? numPages : Integer.parseInt(range[1]);
-                if (from > to) {
-                  error("Invalid range of page numbers: " + sub);
-                }
-                for (int pageNum = from; pageNum <= to; pageNum++) {
-                  pageNums[pageNum - 1] = true;
-                }
-              }
-            }
-            break;
-          }
-
-          default: {
-
-            switch (name) {
-
-              case "image": {
-                final String imageFilename = command.getSubParameter(0).getAsString();
-                final Image image = imageFilename.toLowerCase().endsWith(".svg") ?
-                    SvgConverter.convertToImage(new FileInputStream(imageFilename), doc) :
-                    new Image(ImageDataFactory.create(imageFilename));
-                images.put(imageFilename, image.getXObject());
-                break;
-              }
-
-              case "font-file": {
-                final String fontFilename = command.getSubParameter(0).getAsString();
-                try {
-                  fontPrograms.put(fontFilename, FontProgramFactory.createFont(fontFilename));
-                } catch (final Exception exception) {
-                  error("Failed to process font: " + fontFilename);
-                }
-                break;
-              }
-
-              case "text": {
-                final SubParameter sub = command.getKwSubParameter("ff");
-                if (sub != null) {
-                  final String fontFilename = sub.getAsString();
-                  try {
-                    fontPrograms.put(fontFilename, FontProgramFactory.createFont(fontFilename));
-                  } catch (final Exception exception) {
-                    error("Failed to process font: " + fontFilename);
-                  }
-                }
-                break;
-              }
-            }
-
-            for (int pageNum = 0; pageNum < numPages; pageNum++) {
-              if (pageNums[pageNum]) {
-                commands.get(pageNum).add(command);
-              }
-            }
-          }
-        }
+        cmds.add(new ArrayList<Parameter>());
       }
 
-      for (int pageNum = 0; pageNum < numPages; pageNum++) {
-        if (!commands.get(pageNum).isEmpty()) {
-          final PdfPage page = doc.getPage(pageNum + 1);
-          final float pageWidth = page.getPageSize().getWidth();
-          final float pageHeight = page.getPageSize().getHeight();
-          final PdfCanvas canvas = new PdfCanvas(page.newContentStreamBefore(), page.getResources(), doc);
-          canvas.saveState();
-          boolean textBegun = false;
-          final GenPar genPar = new GenPar();
-          final FontPar fontPar = new FontPar();
+      pass1();
 
-          final Map<String, PdfFont> fonts = new HashMap<>();
-          fonts.put(DEFAULT_FONT_FILENAME, PdfFontFactory.createFont(DEFAULT_FONT_FILENAME, PdfEncodings.IDENTITY_H, true));
-          for (String name : fontPrograms.keySet()) {
-            if (!fonts.containsKey(name)) {
-              fonts.put(name, PdfFontFactory.createFont(name, PdfEncodings.IDENTITY_H, true));
-            }
-          }
+      pass2();
 
-          for (Parameter command: commands.get(pageNum)) {
-            switch (command.getOption().getName()) {
-
-              case "arc": {
-                final double[] arr = makeArrDouble(6, command, "Invalid arc parameters");
-                canvas.arc(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
-                break;
-              }
-
-              case "char-spacing": {
-                fontPar.characterSpacing = command.getSubParameter(0).getAsFloat();
-                break;
-              }
-
-              case "circle": {
-                final double[] arr = makeArrDouble(3, command, "Invalid circle parameters");
-                canvas.circle(arr[0], arr[1], arr[2]);
-                break;
-              }
-
-              case "close-path": {
-                canvas.closePath();
-                break;
-              }
-
-              case "close-path-eo-fill-stroke": {
-                canvas.closePathEoFillStroke();
-                break;
-              }
-
-              case "close-path-fill-stroke": {
-                canvas.closePathFillStroke();
-                break;
-              }
-
-              case "close-path-stroke": {
-                canvas.closePathStroke();
-                break;
-              }
-
-              case "color": {
-                genPar.fillColor = WebColors.getRGBColor(command.getSubParameter(0).getAsString());
-                canvas.setFillColor(genPar.fillColor);
-                genPar.strokeColor =
-                    WebColors.getRGBColor(command.getSubParameter(command.getNumSubParameters() - 1).getAsString());
-                canvas.setStrokeColor(genPar.strokeColor);
-                break;
-              }
-
-              case "curve-from-to": {
-                final double[] arr = makeArrDouble(4, command, "Invalid Bézier curve parameters");
-                canvas.curveFromTo(arr[0], arr[1], arr[2], arr[3]);
-                break;
-              }
-
-              case "curve-to": {
-                final int numPar = command.getNumSubParameters();
-                final double[] arr = makeArrDouble(numPar, command, "Invalid Bézier curve parameters");
-                switch (numPar) {
-                  case 4: {
-                    canvas.curveTo(arr[0], arr[1], arr[2], arr[3]);
-                    break;
-                  }
-                  case 6: {
-                    canvas.curveTo(arr[0], arr[1], arr[2], arr[3], arr[4], arr[5]);
-                    break;
-                  }
-                  default: {
-                    error("Invalid number of Bézier curve parameters");
-                  }
-                }
-                break;
-              }
-
-              case "ellipse": {
-                final double[] arr = makeArrDouble(4, command, "Invalid ellipse parameters");
-                canvas.ellipse(arr[0], arr[1], arr[2], arr[3]);
-                break;
-              }
-
-              case "end-path": {
-                canvas.endPath();
-                break;
-              }
-
-              case "eo-fill": {
-                canvas.eoFill();
-                break;
-              }
-
-              case "eo-fill-stroke": {
-                canvas.eoFillStroke();
-                break;
-              }
-
-              case "fill": {
-                canvas.fill();
-                break;
-              }
-
-              case "fill-color": {
-                genPar.fillColor = WebColors.getRGBColor(command.getSubParameter(0).getAsString());
-                canvas.setFillColor(genPar.fillColor);
-                break;
-              }
-
-              case "fill-stroke": {
-                canvas.fillStroke();
-                break;
-              }
-
-              case "font-file": {
-                fontPar.fontFilename = command.getSubParameter(0).getAsString();
-                break;
-              }
-
-              case "font-size": {
-                fontPar.fontSize = command.getSubParameter(0).getAsFloat();
-                break;
-              }
-
-              case "image": {
-                final String imageFilename = (String) command.getSubParameter(0).getAsString();
-                final PdfXObject image = images.get(imageFilename);
-                final float imageOrigWidth = image.getWidth();
-                final float imageOrigHeight = image.getHeight();
-                final SubParameter width = command.getKwSubParameter("w");
-                float imageWidth = ((width == null) || width.isEmpty()) ? 0f : width.getAsFloat();
-                final SubParameter height = command.getKwSubParameter("h");
-                float imageHeight = ((height == null) || height.isEmpty()) ? 0f : height.getAsFloat();
-                float imageScaleX = 1f;
-                float imageScaleY = 1f;
-                if ((imageWidth > 0f) && (imageHeight > 0f)) {
-                  imageScaleX = imageWidth / imageOrigWidth;
-                  imageScaleY = imageHeight / imageOrigHeight;
-                } else if (imageWidth > 0f) {
-                  imageScaleX = imageWidth / imageOrigWidth;
-                  imageScaleY = imageScaleX;
-                  imageHeight = imageOrigHeight * imageScaleY;
-                } else if (imageHeight > 0f) {
-                  imageScaleX = imageHeight / imageOrigHeight;
-                  imageScaleY = imageScaleX;
-                  imageWidth = imageOrigWidth * imageScaleX;
-                } else {
-                  imageWidth = imageOrigWidth;
-                  imageHeight = imageOrigHeight;
-                }
-                if (!imageFilename.toLowerCase().endsWith(".svg")) {
-                  imageScaleX = imageWidth;
-                  imageScaleY = imageHeight;
-                }
-                final SubParameter posX = command.getSubParameter(1);
-                final SubParameter posY = command.getSubParameter(2);
-                if ((posX.isEmpty()) || posY.isEmpty()) {
-                  error("Invalid image position");
-                }
-                float imageX = Math.abs(posX.getAsFloat());
-                if (posX.getAsString().startsWith("-")) {
-                  imageX += pageWidth - imageWidth;
-                }
-                float imageY = Math.abs(posY.getAsFloat());
-                if (posY.getAsString().startsWith("-")) {
-                  imageY += pageHeight - imageHeight;
-                }
-                final SubParameter corner = command.getKwSubParameter("c");
-                if (corner != null) {
-                  switch (corner.getAsString()) {
-                    case "ll": {
-                      break;
-                    }
-                    case "lr": {
-                      imageX -= imageWidth;
-                      break;
-                    }
-                    case "ul": {
-                      imageY -= imageHeight;
-                      break;
-                    }
-                    case "ur": {
-                      imageX -= imageWidth;
-                      imageY -= imageHeight;
-                      break;
-                    }
-                    default: {
-                      error("Invalid corner");
-                    }
-                  }
-                }
-                canvas.addXObject(image, new Rectangle(imageX, imageY, imageScaleX, imageScaleY));
-                break;
-              }
-
-              case "line-to": {
-                final double[] arr = makeArrDouble(2, command, "Invalid line parameters");
-                canvas.lineTo(arr[0], arr[1]);
-                break;
-              }
-
-              case "leading": {
-                fontPar.leading = command.getSubParameter(0).getAsFloat();
-                break;
-              }
-
-              case "line-cap-style": {
-                canvas.setLineCapStyle(command.getSubParameter(0).getAsInt());
-                break;
-              }
-
-              case "line-dash": {
-                int numPar = command.getNumSubParameters();
-                final float phase = command.getSubParameter(--numPar).getAsFloat();
-                final float[] pattern = new float[numPar];
-                for (int i = 0; i < numPar; i++) {
-                  pattern[i] = command.getSubParameter(i).getAsFloat();
-                }
-                canvas.setLineDash(pattern, phase);
-                break;
-              }
-
-              case "line-join-style": {
-                canvas.setLineJoinStyle(command.getSubParameter(0).getAsInt());
-                break;
-              }
-
-              case "line-width": {
-                genPar.lineWidth = command.getSubParameter(0).getAsFloat();
-                canvas.setLineWidth(genPar.lineWidth);
-                break;
-              }
-
-              case "literal": {
-                final SubParameter sub = command.getSubParameter(0);
-                if (sub == null) {
-                  error("Empty literal");
-                }
-                canvas.writeLiteral(sub.getAsString());
-                break;
-              }
-
-              case "miter-limit": {
-                canvas.setMiterLimit(command.getSubParameter(0).getAsFloat());
-                break;
-              }
-
-              case "move-to": {
-                final double[] arr = makeArrDouble(2, command, "Invalid position parameters");
-                canvas.moveTo(arr[0], arr[1]);
-                break;
-              }
-
-              case "rectangle": {
-                final double[] arr = makeArrDouble(4, command, "Invalid rectangle parameters");
-                arr[0] = Math.abs(arr[0]);
-                if (command.getSubParameter(0).getAsString().startsWith("-")) {
-                  arr[0] += pageWidth - arr[2];
-                }
-                arr[1] = Math.abs(arr[1]);
-                if (command.getSubParameter(1).getAsString().startsWith("-")) {
-                  arr[1] += pageHeight - arr[3];
-                }
-                final SubParameter corner = command.getKwSubParameter("c");
-                if (corner != null) {
-                  switch (corner.getAsString()) {
-                    case "ll": {
-                      break;
-                    }
-                    case "lr": {
-                      arr[0] -= arr[2];
-                      break;
-                    }
-                    case "ul": {
-                      arr[1] -= arr[3];
-                      break;
-                    }
-                    case "ur": {
-                      arr[0] -= arr[2];
-                      arr[1] -= arr[3];
-                      break;
-                    }
-                    default: {
-                      error("Invalid corner");
-                    }
-                  }
-                }
-                canvas.rectangle(arr[0], arr[1], arr[2], arr[3]);
-                break;
-              }
-
-              case "round-rectangle": {
-                final double[] arr = makeArrDouble(5, command, "Invalid round rectangle parameters");
-                arr[0] = Math.abs(arr[0]);
-                if (command.getSubParameter(0).getAsString().startsWith("-")) {
-                  arr[0] += pageWidth - arr[2];
-                }
-                arr[1] = Math.abs(arr[1]);
-                if (command.getSubParameter(1).getAsString().startsWith("-")) {
-                  arr[1] += pageHeight - arr[3];
-                }
-                final SubParameter corner = command.getKwSubParameter("c");
-                if (corner != null) {
-                  switch (corner.getAsString()) {
-                    case "ll": {
-                      break;
-                    }
-                    case "lr": {
-                      arr[0] -= arr[2];
-                      break;
-                    }
-                    case "ul": {
-                      arr[1] -= arr[3];
-                      break;
-                    }
-                    case "ur": {
-                      arr[0] -= arr[2];
-                      arr[1] -= arr[3];
-                      break;
-                    }
-                    default: {
-                      error("Invalid corner");
-                    }
-                  }
-                }
-                canvas.roundRectangle(arr[0], arr[1], arr[2], arr[3], arr[4]);
-                break;
-              }
-
-              case "stroke": {
-                canvas.stroke();
-                break;
-              }
-
-              case "stroke-color": {
-                genPar.strokeColor = WebColors.getRGBColor(command.getSubParameter(0).getAsString());
-                canvas.setStrokeColor(genPar.strokeColor);
-                break;
-              }
-
-              case "text": {
-                final GenPar tempGenPar = genPar.clone();
-                final FontPar tempFontPar = fontPar.clone();
-                if (!textBegun) {
-                  canvas.beginText();
-                  textBegun = true;
-                }
-                if (command.hasKwSubParameter("cs")) {
-                  tempFontPar.characterSpacing = command.getKwSubParameter("cs").getAsFloat();
-                }
-                if (command.hasKwSubParameter("fc")) {
-                  tempGenPar.fillColor = WebColors.getRGBColor(command.getKwSubParameter("fc").getAsString());
-                }
-                if (command.hasKwSubParameter("ff")) {
-                  tempFontPar.fontFilename = command.getKwSubParameter("ff").getAsString();
-                }
-                if (command.hasKwSubParameter("hs")) {
-                  tempFontPar.horizontalScaling = command.getKwSubParameter("hs").getAsFloat();
-                }
-                if (command.hasKwSubParameter("lw")) {
-                  tempGenPar.lineWidth = command.getKwSubParameter("lw").getAsFloat();
-                }
-                if (command.hasKwSubParameter("ps")) {
-                  tempFontPar.fontSize = command.getKwSubParameter("ps").getAsFloat();
-                }
-                if (command.hasKwSubParameter("rm")) {
-                  tempFontPar.textRenderingMode = command.getKwSubParameter("rm").getAsInt();
-                }
-                if (command.hasKwSubParameter("sc")) {
-                  tempGenPar.strokeColor = WebColors.getRGBColor(command.getKwSubParameter("sc").getAsString());
-                }
-                if (command.hasKwSubParameter("tr")) {
-                  tempFontPar.textRise = command.getKwSubParameter("tr").getAsFloat();
-                }
-                if (command.hasKwSubParameter("ws")) {
-                  tempFontPar.wordSpacing = command.getKwSubParameter("ws").getAsFloat();
-                }
-
-                canvas.setFillColor(tempGenPar.fillColor);
-                canvas.setStrokeColor(tempGenPar.strokeColor);
-                canvas.setLineWidth(tempGenPar.lineWidth);
-                canvas.setFontAndSize(fonts.get(tempFontPar.fontFilename), tempFontPar.fontSize);
-                canvas.setLeading(tempFontPar.leading);
-                canvas.setCharacterSpacing(tempFontPar.characterSpacing);
-                canvas.setWordSpacing(tempFontPar.wordSpacing);
-                canvas.setTextRise(tempFontPar.textRise);
-                canvas.setTextRenderingMode(tempFontPar.textRenderingMode);
-                canvas.setHorizontalScaling(tempFontPar.horizontalScaling);
-                final int numSubPar = command.getNumSubParameters();
-                if (numSubPar == 3) {
-                  final SubParameter subX = command.getSubParameter(1);
-                  final SubParameter subY = command.getSubParameter(2);
-                  if ((subX == null) || (subY == null)) {
-                    error("Invalid text position");
-                  }
-                  float textX = Math.abs(subX.getAsFloat());
-                  if (subX.getAsString().startsWith("-")) {
-                    textX += pageWidth;
-                  }
-                  float textY = Math.abs(subY.getAsFloat());
-                  if (subY.getAsString().startsWith("-")) {
-                    textY += pageWidth;
-                  }
-                  canvas.setTextMatrix(textX, textY);
-                } else if (numSubPar != 1) {
-                  error("Invalid text position parameters");
-                }
-                String text = command.getSubParameter(0).getAsString();
-                if (!text.isEmpty()) {
-                  text = text.replace("{page}", "" + (pageNum + 1));
-                  text = text.replace("{pages}", "" + numPages);
-                  final String inputFilename = par.getFileName(0);
-                  text = text.replace("{pathname}", inputFilename);
-                  final String[] parts = inputFilename.split(".+?/(?=[^/]+$)");
-                  text = text.replace("{filename}", parts[parts.length - 1]);
-                  final String[] lines = text.split("\\^");
-                  canvas.showText(lines[0]);
-                  for (int i = 1; i < lines.length; i++) {
-                    canvas.newlineShowText(lines[i]);
-                  }
-                }
-
-                if (!tempGenPar.fillColor.equals(genPar.fillColor)) {
-                  canvas.setFillColor(genPar.fillColor);
-                }
-                if (!tempGenPar.strokeColor.equals(genPar.strokeColor)) {
-                  canvas.setStrokeColor(genPar.strokeColor);
-                }
-                if (tempGenPar.lineWidth != genPar.lineWidth) {
-                  canvas.setLineWidth(genPar.lineWidth);
-                }
-                break;
-              }
-
-              case "text-horizontal-scaling": {
-                fontPar.horizontalScaling = command.getSubParameter(0).getAsFloat();
-                break;
-              }
-
-              case "text-matrix": {
-                if (!textBegun) {
-                  canvas.beginText();
-                  textBegun = true;
-                }
-                final float[] matrix = new float[6];
-                for (int i = 0; i < 6; i++) {
-                  final SubParameter sub = command.getSubParameter(i);
-                  if (sub == null) {
-                    error("Invalid text matrix");
-                  }
-                  matrix[i] = sub.getAsFloat();
-                }
-                canvas.setTextMatrix(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
-                break;
-              }
-
-              case "text-pos": {
-                if (!textBegun) {
-                  canvas.beginText();
-                  textBegun = true;
-                }
-                final SubParameter subX = command.getSubParameter(0);
-                final SubParameter subY = command.getSubParameter(1);
-                if ((subX == null) || (subY == null)) {
-                  error("Invalid text position");
-                }
-                float textX = Math.abs(subX.getAsFloat());
-                if (subX.getAsString().startsWith("-")) {
-                  textX += pageWidth;
-                }
-                float textY = Math.abs(subY.getAsFloat());
-                if (subY.getAsString().startsWith("-")) {
-                  textY += pageWidth;
-                }
-                canvas.setTextMatrix(textX, textY);
-                break;
-              }
-
-              case "text-rendering-mode": {
-                fontPar.textRenderingMode = command.getSubParameter(0).getAsInt();
-                break;
-              }
-
-              case "text-rise": {
-                fontPar.textRise = command.getSubParameter(0).getAsFloat();
-                break;
-              }
-
-              case "word-spacing": {
-                fontPar.wordSpacing = command.getSubParameter(0).getAsFloat();
-                break;
-              }
-
-            }
-          }
-
-          if (textBegun) {
-            canvas.endText();
-            textBegun = true;
-          }
-
-          canvas.restoreState();
-          canvas.release();
-        }
-      }
       doc.close();
       reader.close();
+
     } catch (final NumberFormatException exception) {
       error("Invalid number format: " + exception.getMessage());
+
     } catch (final PdfException exception) {
       error("Error during PDF operation: " + exception.getMessage());
+
     } catch (final Exception exception) {
       error("Error processing files, exception: " + exception);
     }

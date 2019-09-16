@@ -29,12 +29,8 @@ import cz.pecina.seqparser.Parameter;
 import cz.pecina.seqparser.ParameterType;
 import cz.pecina.seqparser.ParseException;
 import cz.pecina.seqparser.SeqParser;
-import cz.pecina.seqparser.SubOption;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 
 /**
  * Parse command line and extract parameters.
@@ -48,26 +44,25 @@ public class Parameters {
   private static final Logger log = Logger.getLogger(Parameters.class.getName());
 
   // options
-  private static final Options options = new Options().setSep(':');
+  private static Options options;
 
   static {
+
     try {
 
+      options = new Options().setSep(':');
+
       options.addOption(new Option("ar", "arc", 6)
-          .addSubOption(ParameterType.Double)
-          );
+          .addSubOption(ParameterType.Double));
 
       options.addOption(new Option("c", "color", 1, 2)
-          .addSubOption(ParameterType.String)
-          );
+          .addSubOption(ParameterType.String));
 
       options.addOption(new Option("cft", "curve-from-to", 4)
-          .addSubOption(ParameterType.Double)
-          );
+          .addSubOption(ParameterType.Double));
 
       options.addOption(new Option("ci", "circle", 3)
-          .addSubOption(ParameterType.Double)
-          );
+          .addSubOption(ParameterType.Double));
 
       options.addOption(new Option("cp", "close-path"));
 
@@ -78,146 +73,119 @@ public class Parameters {
       options.addOption(new Option("cps", "close-path-stroke"));
 
       options.addOption(new Option("cs", "char-spacing", 1)
-          .addSubOption(ParameterType.Float)
-          );
+          .addSubOption(ParameterType.Float));
 
       options.addOption(new Option("ct", "curve-to", 4, 6)
-          .addSubOption(ParameterType.Double)
-          );
+          .addSubOption(ParameterType.Double));
 
       options.addOption(new Option("ef", "eo-fill"));
 
       options.addOption(new Option("efs", "eo-fill-stroke"));
 
       options.addOption(new Option("el", "ellipse", 4)
-          .addSubOption(ParameterType.Double)
-          );
+          .addSubOption(ParameterType.Double));
 
       options.addOption(new Option("ep", "end-path"));
 
       options.addOption(new Option("f", "fill"));
 
       options.addOption(new Option("fc", "fill-color", 1)
-          .addSubOption(ParameterType.String)
-          );
+          .addSubOption(ParameterType.String));
 
       options.addOption(new Option("ff", "font-file", 1)
-          .addSubOption(ParameterType.String)
-          );
+          .addSubOption(ParameterType.String));
 
       options.addOption(new Option("fs", "fill-stroke"));
 
       options.addOption(new Option("hs", "horizontal-scaling", 1)
-          .addSubOption(ParameterType.PosFloat)
-          );
+          .addSubOption(ParameterType.PosFloat));
 
       options.addOption(new Option("i", "image", 3)
           .addSubOption(ParameterType.String)
           .addSubOption(ParameterType.Float)
           .addKwSubOption("w", ParameterType.Float)
           .addKwSubOption("h", ParameterType.Float)
-          .addKwSubOption("c", ParameterType.String)
-          );
+          .addKwSubOption("c", ParameterType.String));
 
       options.addOption(new Option("lc", "line-cap-style", 1)
-          .addSubOption(ParameterType.IntegerRange(0, 2))
-          );
+          .addSubOption(ParameterType.IntegerRange(0, 2)));
 
       options.addOption(new Option("ld", "line-dash", 1, Integer.MAX_VALUE)
-          .addSubOption(ParameterType.NonNegFloat)
-          );
+          .addSubOption(ParameterType.NonNegFloat));
 
       options.addOption(new Option("le", "leading", 1)
-          .addSubOption(ParameterType.Float)
-          );
+          .addSubOption(ParameterType.Float));
 
       options.addOption(new Option("lj", "line-join-style", 1)
-          .addSubOption(ParameterType.IntegerRange(0, 2))
-          );
+          .addSubOption(ParameterType.IntegerRange(0, 2)));
 
       options.addOption(new Option("lt", "line-to", 2)
-          .addSubOption(ParameterType.Double)
-          );
+          .addSubOption(ParameterType.Double));
 
       options.addOption(new Option("lw", "line-width", 1)
-          .addSubOption(ParameterType.NonNegFloat)
-          );
+          .addSubOption(ParameterType.NonNegFloat));
 
       options.addOption(new Option("ml", "miter-limit", 1)
-          .addSubOption(ParameterType.NonNegFloat)
-          );
+          .addSubOption(ParameterType.NonNegFloat));
 
       options.addOption(new Option("mt", "move-to", 2)
-          .addSubOption(ParameterType.Double)
-          );
+          .addSubOption(ParameterType.Double));
 
       options.addOption(new Option("p", "pages", 1, Integer.MAX_VALUE)
-          .addSubOption(ParameterType.String)
-          );
+          .addSubOption(ParameterType.String));
 
       options.addOption(new Option("ps", "font-size", 1)
-          .addSubOption(ParameterType.PosFloat)
-          );
+          .addSubOption(ParameterType.PosFloat));
 
       options.addOption(new Option("re", "rectangle", 4)
           .addSubOption(ParameterType.Double)
           .addSubOption(ParameterType.Double)
           .addSubOption(ParameterType.NonNegDouble)
-          .addKwSubOption("c", ParameterType.String)
-          );
+          .addKwSubOption("c", ParameterType.String));
 
       options.addOption(new Option("rm", "text-rendering-mode", 1)
-          .addSubOption(ParameterType.IntegerRange(0, 7))
-          );
+          .addSubOption(ParameterType.IntegerRange(0, 7)));
 
       options.addOption(new Option("rr", "round-rectangle", 5)
           .addSubOption(ParameterType.Double)
           .addSubOption(ParameterType.Double)
           .addSubOption(ParameterType.NonNegDouble)
-          .addKwSubOption("c", ParameterType.String)
-          );
+          .addKwSubOption("c", ParameterType.String));
 
       options.addOption(new Option("s", "stroke"));
 
       options.addOption(new Option("sc", "stroke-color", 1)
-          .addSubOption(ParameterType.String)
-          );
+          .addSubOption(ParameterType.String));
 
       options.addOption(new Option("t", "text", 1, 3)
           .addSubOption(ParameterType.String)
           .addSubOption(ParameterType.Float)
-          .addKwSubOption("ff", ParameterType.String)
-          .addKwSubOption("ps", ParameterType.PosFloat)
-          .addKwSubOption("le", ParameterType.Float)
           .addKwSubOption("cs", ParameterType.Float)
-          .addKwSubOption("ws", ParameterType.Float)
-          .addKwSubOption("tr", ParameterType.Float)
-          .addKwSubOption("rm", ParameterType.NonNegInteger)
-          .addKwSubOption("hs", ParameterType.Float)
           .addKwSubOption("fc", ParameterType.String)
-          .addKwSubOption("sc", ParameterType.String)
+          .addKwSubOption("ff", ParameterType.String)
+          .addKwSubOption("hs", ParameterType.Float)
+          .addKwSubOption("le", ParameterType.Float)
           .addKwSubOption("lw", ParameterType.NonNegFloat)
-          );
+          .addKwSubOption("ps", ParameterType.PosFloat)
+          .addKwSubOption("rm", ParameterType.NonNegInteger)
+          .addKwSubOption("sc", ParameterType.String)
+          .addKwSubOption("tr", ParameterType.Float)
+          .addKwSubOption("ws", ParameterType.Float));
 
       options.addOption(new Option("tm", "text-matrix", 6)
-          .addSubOption(ParameterType.Float)
-          );
+          .addSubOption(ParameterType.Float));
 
       options.addOption(new Option("tp", "text-pos", 2)
-          .addSubOption(ParameterType.Float)
-          );
+          .addSubOption(ParameterType.Float));
 
       options.addOption(new Option("tr", "text-rise", 1)
-          .addSubOption(ParameterType.Float)
-          );
+          .addSubOption(ParameterType.Float));
 
       options.addOption(new Option("ws", "word-spacing", 1)
-          .addSubOption(ParameterType.Float)
-          );
+          .addSubOption(ParameterType.Float));
 
       options.addOption(new Option("x", "literal", 1)
-          .addSubOption(ParameterType.String)
-          );
+          .addSubOption(ParameterType.String));
 
     } catch (final ParseException exception) {
       log.fine("Error in options: " + exception.getMessage());
@@ -236,7 +204,8 @@ public class Parameters {
    *
    */
   public void usage() {
-    System.out.println("Help text");
+    System.out.println("usage: stamppdr [command...] [--] input-file [output_file]");
+    System.out.println("TBA");
   }
 
   // parsed parameters
@@ -308,7 +277,7 @@ public class Parameters {
 
     CommandLine line = null;
     try {
-      line = SeqParser.parse(options, args, true);
+      line = new SeqParser().parse(options, args, true);
     } catch (final Exception exception) {
       System.err.println("Failed to parse the command line, exception: " + exception);
       usage();

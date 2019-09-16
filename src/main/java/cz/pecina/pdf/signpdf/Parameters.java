@@ -593,7 +593,7 @@ public class Parameters {
 
     if (line.hasOption("image-width")) {
       try {
-        imageWidth = Float.parseFloat(line.getOptionValue("image-width"));
+        imageWidth = Float.valueOf(line.getOptionValue("image-width"));
       } catch (final Exception exception) {
         System.err.println("Error in width, exception: " + exception);
         log.fine("Failed to parse width, exception: " + exception);
@@ -608,7 +608,7 @@ public class Parameters {
 
     if (line.hasOption("image-height")) {
       try {
-        imageHeight = Float.parseFloat(line.getOptionValue("image-height"));
+        imageHeight = Float.valueOf(line.getOptionValue("image-height"));
       } catch (final Exception exception) {
         System.err.println("Error in height, exception: " + exception);
         log.fine("Failed to parse height, exception: " + exception);
@@ -623,7 +623,7 @@ public class Parameters {
 
     if (line.hasOption("image-x")) {
       try {
-        imageX = Math.abs(Float.parseFloat(line.getOptionValue("image-x")));
+        imageX = Math.abs(Float.valueOf(line.getOptionValue("image-x")));
       } catch (final Exception exception) {
         System.err.println("Error in image x-position, exception: " + exception);
         log.fine("Failed to parse image x-position, exception: " + exception);
@@ -634,7 +634,7 @@ public class Parameters {
 
     if (line.hasOption("image-y")) {
       try {
-        imageY = Math.abs(Float.parseFloat(line.getOptionValue("image-y")));
+        imageY = Math.abs(Float.valueOf(line.getOptionValue("image-y")));
       } catch (final Exception exception) {
         System.err.println("Error in image y-position, exception: " + exception);
         log.fine("Failed to parse image y-position, exception: " + exception);
@@ -653,7 +653,7 @@ public class Parameters {
 
     if (line.hasOption("font-size")) {
       try {
-        fontSize = Float.parseFloat(line.getOptionValue("font-size"));
+        fontSize = Float.valueOf(line.getOptionValue("font-size"));
       } catch (final Exception exception) {
         System.err.println("Error in font size, exception: " + exception);
         log.fine("Failed to parse font size, exception: " + exception);
@@ -668,7 +668,7 @@ public class Parameters {
 
     if (line.hasOption("leading")) {
       try {
-        leading = Float.parseFloat(line.getOptionValue("leading"));
+        leading = Float.valueOf(line.getOptionValue("leading"));
       } catch (final Exception exception) {
         System.err.println("Error in leading, exception: " + exception);
         log.fine("Failed to parse leading, exception: " + exception);
@@ -690,9 +690,9 @@ public class Parameters {
       }
       try {
         fontColor = new DeviceRgb(
-            Integer.parseInt(color.substring(0, 2), 16),
-            Integer.parseInt(color.substring(2, 4), 16),
-            Integer.parseInt(color.substring(4, 6), 16));
+            Integer.valueOf(color.substring(0, 2), 16),
+            Integer.valueOf(color.substring(2, 4), 16),
+            Integer.valueOf(color.substring(4, 6), 16));
       } catch (final Exception exception) {
         System.err.println("Error in color string, exception: " + exception);
         log.fine("Failed to parse color string, exception: " + exception);
@@ -702,7 +702,7 @@ public class Parameters {
 
     if (line.hasOption("text-x")) {
       try {
-        textX = Math.abs(Float.parseFloat(line.getOptionValue("text-x")));
+        textX = Math.abs(Float.valueOf(line.getOptionValue("text-x")));
       } catch (final Exception exception) {
         System.err.println("Error in text x-position, exception: " + exception);
         log.fine("Failed to parse text x-position, exception: " + exception);
@@ -713,7 +713,7 @@ public class Parameters {
 
     if (line.hasOption("text-y")) {
       try {
-        textY = Math.abs(Float.parseFloat(line.getOptionValue("text-y")));
+        textY = Math.abs(Float.valueOf(line.getOptionValue("text-y")));
       } catch (final Exception exception) {
         System.err.println("Error in text y-position, exception: " + exception);
         log.fine("Failed to parse text y-position, exception: " + exception);

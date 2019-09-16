@@ -2,7 +2,7 @@
  *
  * Copyright (C) 2015-19, Tomas Pecina <tomas@pecina.cz>
  *
- * This file is part of cz.pecina.pdf, a suite of PDF createing applications.
+ * This file is part of cz.pecina.pdf, a suite of PDF processing applications.
  *
  * This application is free software: you can redistribute it and/or
  * modify it under the terms of the GNU Affero General Public License as
