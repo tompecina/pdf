@@ -309,18 +309,22 @@ public class StampPdf {
             final String[] range = sub.getAsString().split("-", 2);
             if (range.length == 1) {
               final int num = Integer.valueOf(range[0]);
-              if ((num < 1) || (num >= numPages)) {
-                error("Invalid page number: " + range[0]);
+              if (num < 1) {
+                error("Invalid page number: " + num);
               }
-              pageNums[num - 1] = true;
+              if (num <= numPages) {
+                pageNums[num - 1] = true;
+              }
             } else {
               final int from = (range[0].length() == 0) ? 1 : Integer.valueOf(range[0]);
               final int to = (range[1].length() == 0) ? numPages : Integer.valueOf(range[1]);
-              if (from > to) {
-                error("Invalid range of page numbers: " + sub.getAsString());
+              if (from < 1) {
+                error("Invalid page number: " + from);
               }
               for (int pageNum = from; pageNum <= to; pageNum++) {
-                pageNums[pageNum - 1] = true;
+                if (pageNum <= numPages) {
+                  pageNums[pageNum - 1] = true;
+                }
               }
             }
           }
@@ -422,6 +426,22 @@ public class StampPdf {
     canvas.addXObject(image, new Rectangle(arr[0], arr[1], imageScaleX, imageScaleY));
   }
 
+  // begin text if needed
+  private void beginText() {
+    if (!textBegun) {
+      canvas.beginText();
+      textBegun = true;
+    }
+  }
+
+  // end text if needed
+  private void endText() {
+    if (textBegun) {
+      canvas.endText();
+      textBegun = true;
+    }
+  }
+
   // parse text
   private void parseText(final int pageNum) {
 
@@ -430,10 +450,7 @@ public class StampPdf {
 
     canvas.saveState();
 
-    if (!textBegun) {
-      canvas.beginText();
-      textBegun = true;
-    }
+    beginText();
 
     canvas.setCharacterSpacing(cmd.hasKwSubParameter("cs") ? cmd.getKwSubParameter("cs").getAsFloat() : characterSpacing);
     if (cmd.hasKwSubParameter("fc")) {
@@ -730,34 +747,34 @@ public class StampPdf {
             }
 
             case "text-matrix": {
-              if (!textBegun) {
-                canvas.beginText();
-                textBegun = true;
-              }
+              beginText();
               final float[] matrix = new float[6];
               for (int i = 0; i < 6; i++) {
                 final SubParameter sub = cmd.getSubParameter(i);
                 if (sub == null) {
                   error("Invalid text matrix");
                 }
-                matrix[i] = sub.getAsFloat();
+                if (i < 4) {
+                  matrix[i] = sub.getAsFloat();
+                } else if (i == 4) {
+                  matrix[i] = adjustXFloat(sub);
+                } else {
+                  matrix[i] = adjustYFloat(sub);
+                }
               }
               canvas.setTextMatrix(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4], matrix[5]);
               break;
             }
 
             case "text-pos": {
-              if (!textBegun) {
-                canvas.beginText();
-                textBegun = true;
-              }
+              beginText();
               final SubParameter subX = cmd.getSubParameter(0);
               final SubParameter subY = cmd.getSubParameter(1);
               if ((subX == null) || (subY == null)) {
                 error("Invalid text position");
               }
               final float textX = adjustXFloat(subX);
-              final float textY = adjustXFloat(subY);
+              final float textY = adjustYFloat(subY);
               canvas.setTextMatrix(textX, textY);
               break;
             }
@@ -784,10 +801,7 @@ public class StampPdf {
           }
         }
 
-        if (textBegun) {
-          canvas.endText();
-          textBegun = true;
-        }
+        endText();
 
         canvas.restoreState();
         canvas.release();
@@ -820,8 +834,8 @@ public class StampPdf {
     try {
       inputData = Files.readAllBytes(Paths.get(par.getFileName(0)));
       outFileName = par.getFileName(par.numberFileNames() - 1);
-    } catch (final Exception exception) {
-      error("Error opening files, exception: " + exception);
+    } catch (final IOException exception) {
+      error("Error opening files, exception: " + exception.getMessage());
     }
 
     try {
@@ -844,6 +858,12 @@ public class StampPdf {
       doc.close();
       reader.close();
 
+    } catch (final FileNotFoundException exception) {
+      error("File not found, exception: " + exception.getMessage());
+
+    } catch (final IOException exception) {
+      error("Error opening files, exception: " + exception.getMessage());
+
     } catch (final NumberFormatException exception) {
       error("Invalid number format: " + exception.getMessage());
 
@@ -851,7 +871,7 @@ public class StampPdf {
       error("Error during PDF operation: " + exception.getMessage());
 
     } catch (final Exception exception) {
-      error("Error processing files, exception: " + exception);
+      error("Error processing files, exception: " + exception.getMessage());
     }
 
     log.fine("Application terminated normally");
