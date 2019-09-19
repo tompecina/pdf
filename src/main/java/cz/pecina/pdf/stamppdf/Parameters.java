@@ -23,7 +23,6 @@
 package cz.pecina.pdf.stamppdf;
 
 import cz.pecina.seqparser.CommandLine;
-import cz.pecina.seqparser.Option;
 import cz.pecina.seqparser.Options;
 import cz.pecina.seqparser.Parameter;
 import cz.pecina.seqparser.ParameterType;
@@ -201,7 +200,6 @@ public class Parameters {
 
   /**
    * Prints usage information.
-   *
    */
   public void usage() {
     System.out.println("Usage:\n  stamppdf [COMMAND...] [--] INPUT-FILE [OUTPUT-FILE]");

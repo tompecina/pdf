@@ -104,7 +104,6 @@ public class StampPdf {
 
   // other fields
   private Parameters par;
-  private PdfDocument doc;
   private int numPages;
   private boolean[] pageNums;
   private Map<String, PdfXObject> images = new HashMap<>();
@@ -294,7 +293,7 @@ public class StampPdf {
   }
 
   // first parsing pass
-  private void pass1() throws FileNotFoundException, IOException {
+  private void pass1(final PdfDocument doc) throws FileNotFoundException, IOException {
 
     for (Parameter tempCmd : par.getParameters()) {
       cmd = tempCmd;
@@ -507,7 +506,7 @@ public class StampPdf {
 
   // second parsing pass
   @SuppressWarnings("checkstyle:MethodLength")
-  private void pass2() throws IOException {
+  private void pass2(final PdfDocument doc) throws IOException {
 
     for (int pageNum = 0; pageNum < numPages; pageNum++) {
 
@@ -838,12 +837,11 @@ public class StampPdf {
       error("Error opening files, exception: " + exception.getMessage());
     }
 
-    try {
+    try (
+        PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
+        PdfWriter writer = new PdfWriter(new FileOutputStream(outFileName));
+        PdfDocument doc = new PdfDocument(reader, writer, new StampingProperties().useAppendMode())) {
 
-      final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
-      final StampingProperties prop = new StampingProperties().preserveEncryption().useAppendMode();
-      final PdfWriter writer = new PdfWriter(new FileOutputStream(outFileName));
-      doc = new PdfDocument(reader, writer, prop);
       numPages = doc.getNumberOfPages();
       pageNums = new boolean[numPages];
       pageNums[0] = true;
@@ -851,12 +849,9 @@ public class StampPdf {
         cmds.add(new ArrayList<Parameter>());
       }
 
-      pass1();
+      pass1(doc);
 
-      pass2();
-
-      doc.close();
-      reader.close();
+      pass2(doc);
 
     } catch (final FileNotFoundException exception) {
       error("File not found, exception: " + exception.getMessage());

@@ -239,43 +239,45 @@ public class SignPdf {
       System.exit(1);
     }
 
-    try {
-      final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
+    try (PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData))) {
+
       final StampingProperties prop = new StampingProperties().preserveEncryption();
       if (par.getSignatureAppend()) {
         prop.useAppendMode();
       }
       final PdfSigner signer = new PdfSigner(reader, new FileOutputStream(outFileName), prop);
-      final PdfDocument doc = signer.getDocument();
-      if (
-          (par.getSignatureFieldName() != null)
-          && !(new SignatureUtil(doc)).getBlankSignatureNames()
-          .contains(par.getSignatureFieldName())) {
-        System.err.println("Field not found");
-        log.fine("Field not found");
-        System.exit(1);
+
+      try (PdfDocument doc = signer.getDocument()) {
+
+        if (
+            (par.getSignatureFieldName() != null)
+            && !(new SignatureUtil(doc)).getBlankSignatureNames()
+            .contains(par.getSignatureFieldName())) {
+          System.err.println("Field not found");
+          log.fine("Field not found");
+          System.exit(1);
+        }
+        final PdfSignatureAppearance app = signer.getSignatureAppearance().setReuseAppearance(false);
+        if (par.getReason() != null) {
+          app.setReason(par.getReason());
+        }
+        if (par.getLocation() != null) {
+          app.setLocation(par.getLocation());
+        }
+        if (par.getContact() != null) {
+          app.setContact(par.getContact());
+        }
+        signer.setCertificationLevel(par.getCertificationLevel());
+        final PrivateKeySignature signature = new PrivateKeySignature(key, DigestAlgorithms.SHA256, provider.getName());
+        final BouncyCastleDigest digest = new BouncyCastleDigest();
+        signer.setSignatureEvent(new SignatureEvent(par.getReason(), par.getLocation(), par.getContact()));
+        if (par.getSignatureFieldName() != null) {
+          signer.setFieldName(par.getSignatureFieldName());
+          createN0(app, doc);
+          createN2(par, app, doc, signer, chain);
+        }
+        signer.signDetached(digest, signature, chain, null, null, null, SIGN_SIZE, PdfSigner.CryptoStandard.CMS);
       }
-      final PdfSignatureAppearance app = signer.getSignatureAppearance().setReuseAppearance(false);
-      if (par.getReason() != null) {
-        app.setReason(par.getReason());
-      }
-      if (par.getLocation() != null) {
-        app.setLocation(par.getLocation());
-      }
-      if (par.getContact() != null) {
-        app.setContact(par.getContact());
-      }
-      signer.setCertificationLevel(par.getCertificationLevel());
-      final PrivateKeySignature signature = new PrivateKeySignature(key, DigestAlgorithms.SHA256, provider.getName());
-      final BouncyCastleDigest digest = new BouncyCastleDigest();
-      signer.setSignatureEvent(new SignatureEvent(par.getReason(), par.getLocation(), par.getContact()));
-      if (par.getSignatureFieldName() != null) {
-        signer.setFieldName(par.getSignatureFieldName());
-        createN0(app, doc);
-        createN2(par, app, doc, signer, chain);
-      }
-      signer.signDetached(digest, signature, chain, null, null, null, SIGN_SIZE, PdfSigner.CryptoStandard.CMS);
-      reader.close();
     } catch (final Exception exception) {
       System.err.println("Error processing files, exception: " + exception);
       log.fine("Error processing files, exception: " + exception);
