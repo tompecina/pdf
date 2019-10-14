@@ -57,6 +57,7 @@
 
     <module name="RegexpHeader">
       <property name="headerFile" value="src/checkstyle/resources/header.txt"/>
+      <property name="fileExtensions" value="java"/>
     </module>
 
     <module name="TreeWalker">
@@ -365,7 +366,7 @@
         <module name="InterfaceIsType"/>
         <module name="VisibilityModifier">
           <property name="protectedAllowed" value="true"/>
-          <property name="packageAllowed" value="false"/>
+          <property name="packageAllowed" value="true"/>
         </module>
 
         <!-- Miscellaneous other checks.                   -->

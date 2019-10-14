@@ -289,7 +289,7 @@ public class InspectPdf {
         final PdfAcroForm acroForm = PdfAcroForm.getAcroForm(pdfDocument, false);
         SignaturePermissions permissions = null;
         for (String name : names) {
-          System.out.println(String.format("Signature '%s':", name));
+          System.out.printf("Signature '%s':%n", name);
           System.out.println("  Signature covers whole document: " + yn(util.signatureCoversWholeDocument(name)));
           System.out.println("  Document revision: " + util.getRevision(name) + " of " + util.getTotalRevisions());
           PdfPKCS7 pkcs7 = util.readSignatureData(name);
@@ -311,9 +311,9 @@ public class InspectPdf {
                 System.out.println("  Invisible signature");
               } else {
                 final int page = pdfDocument.getPageNumber(widget.getPage());
-                System.out.println(String.format(
-                    "  Field on page %d; llx: %f, lly: %f, urx: %f; ury: %f",
-                    page, position.getLeft(), position.getBottom(), position.getRight(), position.getTop()));
+                System.out.printf(
+                    "  Field on page %d; llx: %f, lly: %f, urx: %f; ury: %f%n",
+                    page, position.getLeft(), position.getBottom(), position.getRight(), position.getTop());
               }
             } else {
               System.out.println("  Invisible signature (no widget)");
@@ -372,7 +372,7 @@ public class InspectPdf {
         for (int i = 0; i < numObjects; i++) {
           final PdfObject pdfObject = pdfDocument.getPdfObject(i);
           if (pdfObject != null) {
-            System.out.println(String.format("%d: %s%n", i, stringify(pdfObject)));
+            System.out.printf("%d: %s%n", i, stringify(pdfObject));
           }
         }
       }

@@ -179,9 +179,8 @@ public class AddPdfStream {
       }
       if ((compressionLevel < CompressionConstants.NO_COMPRESSION)
           || (compressionLevel > CompressionConstants.BEST_COMPRESSION)) {
-        System.err.println(String.format(
-            "Compression level must be (%d-%d)",
-            CompressionConstants.NO_COMPRESSION, CompressionConstants.BEST_COMPRESSION));
+        System.err.printf("Compression level must be (%d-%d)%n",
+            CompressionConstants.NO_COMPRESSION, CompressionConstants.BEST_COMPRESSION);
         log.fine("Compression level out of range");
         System.exit(1);
       }
