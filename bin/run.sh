@@ -10,11 +10,13 @@ case "$name" in
      inspectpdf) class='cz.pecina.pdf.inspectpdf.InspectPdf';;
      pdftoxml) class='cz.pecina.pdf.pdftoxml.PdfToXml';;
      readpdfstream) class='cz.pecina.pdf.readpdfstream.ReadPdfStream';;
+     redactpdf) class='cz.pecina.pdf.redactpdf.RedactPdf';;
+     rmttlpdf) class='cz.pecina.pdf.rmttlpdf.RmTtlPdf';;
      rmwmark) class='cz.pecina.pdf.rmwmark.RmWmark';;
      signboxpdf) class='cz.pecina.pdf.signboxpdf.SignBoxPdf';;
      signpdf) class='cz.pecina.pdf.signpdf.SignPdf';;
      stamppdf) class='cz.pecina.pdf.stamppdf.StampPdf';;
      *) class='cz.pecina.pdf.PdfHelp';;
 esac
-    
+
 java -cp $(find $path/../target/ -name 'pdf-*-jar-with-dependencies.jar' | sort | tail -n 1) $class "$@"

@@ -1,4 +1,4 @@
-/* PdfHelp.java
+/* Parameters.java
  *
  * Copyright (C) 2015-19, Tomas Pecina <tomas@pecina.cz>
  *
@@ -20,8 +20,9 @@
  * The source code is available from <https://github.com/tompecina/pdf>.
  */
 
-package cz.pecina.pdf;
+package cz.pecina.pdf.rmttlpdf;
 
+import java.util.Arrays;
 import java.util.logging.Logger;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -31,78 +32,125 @@ import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
 /**
- * Display list of available utilities and exit.
+ * Parse command line and extract parameters.
  *
  * @author Tomáš Pecina
  * @version 1.0.0
  */
-public class PdfHelp {
+public class Parameters {
 
   // static logger
-  private static final Logger log = Logger.getLogger(PdfHelp.class.getName());
-
-  // for description see Object
-  @Override
-  public String toString() {
-    return "PdfHelp";
-  }
+  private static final Logger log = Logger.getLogger(Parameters.class.getName());
 
   // options
-  private static final Options OPTIONS = new Options();
+  private static final Options options = new Options();
 
   static {
-    OPTIONS.addOption(
+    options.addOption(
+        Option.builder("?")
+        .longOpt("help")
+        .desc("show usage information")
+        .build());
+    options.addOption(
         Option.builder("V")
         .longOpt("version")
         .desc("show version")
         .build());
   }
 
+  // for description see Object
+  @Override
+  public String toString() {
+    return "Parameters";
+  }
+
   /**
    * Prints usage information.
    *
    */
-  private static void usage() {
+  public void usage() {
     final HelpFormatter helpFormatter = new HelpFormatter();
-    System.out.println("A suite of PDF processing utilities:");
-    System.out.println(" - AddPdfMeta - add metadata to PDF");
-    System.out.println(" - AddPdfStream - add stream to PDF");
-    System.out.println(" - InspectPdf - show PDF metadata");
-    System.out.println(" - PdfToXml - convert PDF to XML file");
-    System.out.println(" - ReadPdfStream - read stream from PDF");
-    System.out.println(" - RedactPdf - redact PDF");
-    System.out.println(" - RmTtlPdf - remove PDF title");
-    System.out.println(" - RmWmark - strip text elements from PDF");
-    System.out.println(" - SignBoxPdf - add signing box to PDF");
-    System.out.println(" - SignPdf - digitally sign PDF");
-    System.out.println(" - StampPdf - stamp PDF with simple text information");
+    helpFormatter.printHelp("rmwmark [options] infile [outfile]", options);
     System.out.println("\nThe source code is available from <https://github.com/tompecina/pdf>.");
   }
 
+  // parsed parameters
+  private String[] fileNames;
+
   /**
-   * Main method.
+   * Gets file names.
+   *
+   * @return file names as string array
+   */
+  public String[] getFileNames() {
+    return fileNames;
+  }
+
+  /**
+   * Gets number of file names.
+   *
+   * @return number of file names
+   */
+  public int numberFileNames() {
+    return fileNames.length;
+  }
+
+  /**
+   * Gets file name.
+   *
+   * @param  n file name index
+   * @return file names as string array
+   */
+  public String getFileName(final int n) {
+    return fileNames[n];
+  }
+
+  /**
+   * Default constructor.
    *
    * @param args command-line arguments
    */
-  public static void main(final String[] args) {
-    log.fine("Application started");
+  public Parameters(final String[] args) {
+    log.fine("Parameters started");
+
+    if ((args == null) || (args.length < 1)) {
+      usage();
+      log.fine("Error in parameters");
+      System.exit(1);
+    }
 
     final CommandLineParser parser = new DefaultParser();
     CommandLine line = null;
     try {
-      line = parser.parse(OPTIONS, args);
+      line = parser.parse(options, args, true);
     } catch (final Exception exception) {
       usage();
       log.fine("Failed to parse the command line, exception: " + exception);
       System.exit(1);
     }
 
-    if (line.hasOption("V")) {
-      System.err.println("1.0.0");
-    } else {
+    if (line.hasOption("?")) {
       usage();
+      log.fine("Application terminated normally");
+      System.exit(0);
     }
 
-    log.fine("Application terminated normally");
+    if (line.hasOption("V")) {
+      System.err.println("1.0.0");
+      log.fine("Application terminated normally");
+      System.exit(0);
+    }
+
+    final String[] remArgs = line.getArgs();
+
+    if ((remArgs.length < 1) || (remArgs.length > 2)) {
+      usage();
+      log.fine("Error in parameters");
+      System.exit(1);
+    }
+
+    fileNames = Arrays.copyOfRange(remArgs, 0, remArgs.length);
+
+    log.fine("Parameters set up");
   }
 }
