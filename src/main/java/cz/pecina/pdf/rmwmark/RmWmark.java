@@ -25,7 +25,6 @@ package cz.pecina.pdf.rmwmark;
 import com.itextpdf.kernel.geom.Matrix;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
-import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.canvas.parser.EventType;
 import com.itextpdf.kernel.pdf.canvas.parser.PdfDocumentContentParser;
@@ -128,7 +127,8 @@ public class RmWmark {
     }
 
     try {
-      final PdfReader reader = new PdfReader(new ByteArrayInputStream(inputData));
+      final ModPdfReader reader = new ModPdfReader(new ByteArrayInputStream(inputData));
+      reader.resetEncrypted();
       final PdfDocument inDoc = new PdfDocument(reader);
       final int numberPages = inDoc.getNumberOfPages();
       final PdfDocumentContentParser parser = new PdfDocumentContentParser(inDoc);
