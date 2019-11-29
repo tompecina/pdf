@@ -12,6 +12,7 @@ case "$name" in
      readpdfstream) class='cz.pecina.pdf.readpdfstream.ReadPdfStream';;
      redactpdf) class='cz.pecina.pdf.redactpdf.RedactPdf';;
      rmttlpdf) class='cz.pecina.pdf.rmttlpdf.RmTtlPdf';;
+     rmopass) class='cz.pecina.pdf.rmopass.RmOPass';;
      rmwmark) class='cz.pecina.pdf.rmwmark.RmWmark';;
      signboxpdf) class='cz.pecina.pdf.signboxpdf.SignBoxPdf';;
      signpdf) class='cz.pecina.pdf.signpdf.SignPdf';;
