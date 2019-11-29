@@ -25,6 +25,7 @@ package cz.pecina.pdf.rmwmark;
 import com.itextpdf.kernel.geom.Matrix;
 import com.itextpdf.kernel.pdf.PdfDocument;
 import com.itextpdf.kernel.pdf.PdfPage;
+import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.kernel.pdf.canvas.parser.EventType;
 import com.itextpdf.kernel.pdf.canvas.parser.PdfDocumentContentParser;
@@ -38,6 +39,8 @@ import com.itextpdf.layout.element.Image;
 import com.itextpdf.layout.property.AreaBreakType;
 import java.io.ByteArrayInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.EnumSet;
@@ -104,6 +107,20 @@ public class RmWmark {
     }
   }
 
+  // modified PdfReader allowing encryption flag reset
+  private static class ModifiedPdfReader extends PdfReader {
+
+    public ModifiedPdfReader(final InputStream stream) throws IOException {
+      super(stream);
+    }
+
+    // reset the encrypted flag
+    public void resetEncrypted() {
+      setUnethicalReading(true);
+      encrypted = false;
+    }
+  }
+
   /**
    * Main method.
    *
@@ -127,7 +144,7 @@ public class RmWmark {
     }
 
     try {
-      final ModPdfReader reader = new ModPdfReader(new ByteArrayInputStream(inputData));
+      final ModifiedPdfReader reader = new ModifiedPdfReader(new ByteArrayInputStream(inputData));
       reader.resetEncrypted();
       final PdfDocument inDoc = new PdfDocument(reader);
       final int numberPages = inDoc.getNumberOfPages();
