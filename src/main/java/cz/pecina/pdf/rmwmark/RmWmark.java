@@ -110,7 +110,7 @@ public class RmWmark {
   // modified PdfReader allowing encryption flag reset
   private static class ModifiedPdfReader extends PdfReader {
 
-    public ModifiedPdfReader(final InputStream stream) throws IOException {
+    ModifiedPdfReader(final InputStream stream) throws IOException {
       super(stream);
     }
 
